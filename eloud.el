@@ -1,38 +1,3 @@
-
-;  (thing-at-point 'line))
-
-;; (defvar eloud-mode nil
-;;   "Mode variable for eloud mode.")
-
-;; (defun eloud-mode (&optional arg)
-;;   "Eloud minor mode toggle."
-;;   (interactive "P")
-;;   (setq eloud-mode
-;; 	(if (null arg)
-;; 	    (not eloud-mode)
-;; 	  (> (prefix-numeric-value arg) 0)))
-;;   (if eloud-mode
-;;       code for turning on eloud-mode
-;;       code for turning off eloud-mode))
-
-;; ; add to mode line
-;; (if (not (assq 'eloud-mode minor-mode-alist))
-;;     (setq minor-mode-alist
-;; 	  (cons '(eloud-mode " eloud")
-;; 		minor-mode-alist
-
-
-
-;; (thing-at-point 'line)
-
-;; (current-line)
-
-;; (save-excursion
-;;   (goto-char (point-min)))
-
-
-
-
 (setq eloud-speech-rate 270)
 
 (defun eloud-speak (string &optional speed)
@@ -44,14 +9,32 @@
       (speak string eloud-speech-rate))))
 
 
+;;;;
+;; Speech functions
+;;;;
+
 (defun eloud-rest-of-line ()
   "Speak remainder of line aloud."
   (interactive)
   (eloud-speak 
    (buffer-substring (point) (line-end-position))))
 
+(defun eloud-whole-buffer ()
+  "Speak whole buffer"
+  (interactive)
+  (eloud-speak
+   (buffer-substring (point-min) (point-max))))
+
+
+		      
+;;;;
+;; Map speech functions to Emacs commands
+;;;;
+
+
 (setq advice-map '((next-line . eloud-rest-of-line)
-		   (previous-line . eloud-rest-of-line)))
+		   (previous-line . eloud-rest-of-line)
+		   (beginning-of-buffer . eloud-whole-buffer)))
 
 
 (defun map-commands-to-speech-functions (advice-map &optional unmap)
@@ -60,8 +43,8 @@
 	    (let ((target-function (car x))
 		  (speech-function (cdr x)))
 	      (if (not unmap)
-		  (advice-add target-function :after #'eloud-rest-of-line)
-		(advice-remove target-function #'eloud-rest-of-line))))
+		  (advice-add target-function :after speech-function)
+		(advice-remove target-function speech-function))))
 	  advice-map))
 
 (map-commands-to-speech-functions advice-map t)
