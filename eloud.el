@@ -25,6 +25,12 @@
   (eloud-speak
    (buffer-substring (point-min) (point-max))))
 
+(defun eloud-status-info ()
+  "Read status info normally on mode line."
+  (interactive)
+  (eloud-speak
+   (concat (buffer-name) " " (symbol-name major-mode))))
+
 
 		      
 ;;;;
@@ -47,9 +53,9 @@
 		(advice-remove target-function speech-function))))
 	  advice-map))
 
-(map-commands-to-speech-functions advice-map t)
+(map-commands-to-speech-functions advice-map)
 
-(eloud-speak "foo")
+
 
 ;; (advice-remove 'next-line #'eloud-rest-of-line)
 ;; (advice-remove 'previous-line #'eloud-rest-of-line)
