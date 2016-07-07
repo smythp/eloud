@@ -9,16 +9,6 @@
 		 default-args
 	       (append default-args args))))))
 
-
-
-
-		 
-
-
-(eloud-speak "foo")
-
-
-
 ;;;;
 ;; Speech functions
 ;;;;
@@ -42,6 +32,14 @@
    (concat (buffer-name) " " (symbol-name major-mode))))
 
 
+(defun eloud-character-at-point ()
+  "Read character at point aloud."
+  (interactive)
+  (eloud-speak
+   (buffer-substring (point) (1+ (point)))
+   nil "--punct"))
+   
+	       
 		      
 ;;;;
 ;; Map speech functions to Emacs commands
@@ -50,6 +48,8 @@
 
 (setq advice-map '((next-line . eloud-rest-of-line)
 		   (previous-line . eloud-rest-of-line)
+		   (forward-char . eloud-character-at-point)
+		   (backward-char . eloud-character-at-point)
 		   (beginning-of-buffer . eloud-whole-buffer)))
 
 
@@ -63,7 +63,7 @@
 		(advice-remove target-function speech-function))))
 	  advice-map))
 
-;; (map-commands-to-speech-functions advice-map)
+;; (map-commands-to-speech-functions advice-map t)
 
 
 
