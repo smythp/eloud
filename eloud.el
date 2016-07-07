@@ -59,13 +59,17 @@
   (mapcar (lambda (x)
 	    (let ((target-function (car x))
 		  (speech-function (cdr x)))
-	      (advice-add target-function :after #'eloud-rest-of-line)))
+	      (if (not unmap)
+		  (advice-add target-function :after #'eloud-rest-of-line)
+		(advice-remove target-function #'eloud-rest-of-line))))
 	  advice-map))
+
+(map-commands-to-speech-functions advice-map t)
 
 (eloud-speak "foo")
 
-(advice-remove 'next-line #'eloud-rest-of-line)
-(advice-remove 'previous-line #'eloud-rest-of-line)
+;; (advice-remove 'next-line #'eloud-rest-of-line)
+;; (advice-remove 'previous-line #'eloud-rest-of-line)
 
 
 ;; (advice-add 'previous-line :after #'eloud-rest-of-line)
