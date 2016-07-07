@@ -1,12 +1,22 @@
 (setq eloud-speech-rate 270)
 
-(defun eloud-speak (string &optional speed)
-  "Take a string and pass it to the espeak asynchronous process. Uses the eloud-speech-rate variable if no speed is specified."
-  (flet ((speak (string speed)
-	(start-process "eloud-speaking" nil "espeak" "-s" (number-to-string speed) string)))
-    (if speed
-	(speak string speed)
-      (speak string eloud-speech-rate))))
+(defun eloud-speak (string &optional speed &rest args)
+  "Take a string and pass it to the espeak asynchronous process. Uses the eloud-speech-rate variable if no optional integer speed is specified. Pass additional arguments to espeak as rest arguments."
+  (flet ((speak (full-args-list)
+		(apply 'start-process full-args-list)))
+    (let ((default-args `("eloud-speaking" nil "espeak" ,string "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate)))))
+      (speak (if (not args)
+		 default-args
+	       (append default-args args))))))
+
+
+
+
+		 
+
+
+(eloud-speak "foo")
+
 
 
 ;;;;
@@ -53,7 +63,7 @@
 		(advice-remove target-function speech-function))))
 	  advice-map))
 
-(map-commands-to-speech-functions advice-map)
+;; (map-commands-to-speech-functions advice-map)
 
 
 
