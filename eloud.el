@@ -2,12 +2,19 @@
 
 (defun eloud-speak (string &optional speed &rest args)
   "Take a string and pass it to the espeak asynchronous process. Uses the eloud-speech-rate variable if no optional integer speed is specified. Pass additional arguments to espeak as rest arguments."
+  ;; Defines a function that runs process on list of arguments.
+  ;; Defines sensible defaults.
+  ;; Run with defaults if no additional args specified in function call, else append additional arguments and run
   (flet ((speak (full-args-list)
 		(apply 'start-process full-args-list)))
     (let ((default-args `("eloud-speaking" nil "espeak" ,string "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate)))))
-      (speak (if (not args)
-		 default-args
-	       (append default-args args))))))
+      (progn
+	  (progn
+	    (start-process "kill-espeak" nil "killall" "espeak")
+	    (sleep-for .5)
+	    (speak (if (not args)
+		       default-args
+		     (append default-args args))))))))
 
 ;;;;
 ;; Speech functions
@@ -63,18 +70,4 @@
 		(advice-remove target-function speech-function))))
 	  advice-map))
 
-;; (map-commands-to-speech-functions advice-map t)
-
-
-
-;; (advice-remove 'next-line #'eloud-rest-of-line)
-;; (advice-remove 'previous-line #'eloud-rest-of-line)
-
-
-;; (advice-add 'previous-line :after #'eloud-rest-of-line)
-;; (advice-add 'next-line :after #'eloud-rest-of-line)
-
-
-
-
-
+;; (map-commands-to-speech-functions advice-map)
