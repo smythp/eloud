@@ -26,6 +26,9 @@
   (eloud-speak 
    (buffer-substring (point) (line-end-position))))
 
+(defun eloud-rest-of-line-override (&rest r)
+  (eloud-rest-of-line))
+
 (defun eloud-whole-buffer ()
   "Speak whole buffer"
   (interactive)
@@ -55,6 +58,7 @@
 
 (setq advice-map '((next-line . eloud-rest-of-line)
 		   (previous-line . eloud-rest-of-line)
+		   (move-beginning-of-line . eloud-rest-of-line-override)
 		   (forward-char . eloud-character-at-point)
 		   (backward-char . eloud-character-at-point)
 		   (beginning-of-buffer . eloud-whole-buffer)))
@@ -70,4 +74,4 @@
 		(advice-remove target-function speech-function))))
 	  advice-map))
 
-;; (map-commands-to-speech-functions advice-map)
+(map-commands-to-speech-functions advice-map)
