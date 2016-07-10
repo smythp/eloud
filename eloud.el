@@ -25,9 +25,9 @@
 ;; Speech functions
 ;;;;
 
-(defun eloud-rest-of-line ()
+(defun eloud-rest-of-line (&optional pre)
   "Speak remainder of line aloud."
-  (interactive)
+  (interactive "^p")
   (eloud-speak 
    (buffer-substring (point) (line-end-position))))
 
@@ -86,4 +86,4 @@
 	  advice-map))
 
 
-;; (map-commands-to-speech-functions advice-map)
+(map-commands-to-speech-functions advice-map)
