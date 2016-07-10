@@ -17,7 +17,6 @@
 		   default-args
 		 (append default-args args)))))))
 
-
 ;;;;
 ;; Speech functions
 ;;;;
@@ -53,7 +52,15 @@
    (buffer-substring (point) (1+ (point)))
    nil "--punct"))
 
-		      
+(defun eloud-last-character (&rest r)
+  (eloud-speak
+   (buffer-substring (1- (point)) (point))
+   eloud-speech-rate t "--punct"))
+  
+
+
+
+
 ;;;;
 ;; Map speech functions to Emacs commands
 ;;;;
@@ -64,6 +71,7 @@
 		   (move-beginning-of-line . eloud-rest-of-line-override)
 		   (forward-char . eloud-character-at-point)
 		   (backward-char . eloud-character-at-point)
+		   (self-insert-command . eloud-last-character)
 		   (beginning-of-buffer . eloud-whole-buffer)))
 
 
