@@ -36,11 +36,13 @@
 (defun eloud-rest-of-line-override (&rest r)
   (eloud-rest-of-line))
 
+
 (defun eloud-whole-buffer ()
   "Speak whole buffer"
   (interactive)
   (eloud-speak
    (buffer-substring (point-min) (point-max))))
+
 
 (defun eloud-status-info ()
   "Read status info normally on mode line."
@@ -56,11 +58,29 @@
    (buffer-substring (point) (1+ (point)))
    nil t "--punct"))
 
+
 (defun eloud-last-character (&rest r)
   (eloud-speak
    (buffer-substring (1- (point)) (point))
    eloud-speech-rate t "--punct"))
 
+
+(defun eloud-word (&optional arg forward)
+  "Reads arg words back or forward. If arg is nil, reads one word by default. If forward is non-nil, reads forward arg words instead."
+  (interactive "^p")
+  (progn
+    (let ((start-point (point)))
+      (save-excursion
+	(progn
+	  (if forward
+	      (forward-word arg)
+	    (backward-word arg))
+	  (eloud-speak (buffer-substring start-point (point))))))))
+	   
+      
+
+
+			
 ;;;;
 ;; Map speech functions to Emacs commands
 ;;;;
