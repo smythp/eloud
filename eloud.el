@@ -24,6 +24,15 @@
 		   default-args
 		 (append default-args args)))))))
 
+
+(string-to-char "foo")
+
+(defun insert-space-if-hyphen-in-string (string)
+  (if (equal (string-to-char string) '\-)
+    'yes 'no))
+
+(insert-space-if-hyphen-in-string "-foo")
+
 ;;;;
 ;; Speech functions
 ;;;;
@@ -68,7 +77,7 @@
    eloud-speech-rate t "--punct"))
 
 
-(defun etest (&rest r)
+(defun eloud-word (&rest r)
   "Reads arg words back or forward. If arg is nil, reads one word by default. If forward is non-nil, reads forward arg words instead."
   (interactive "^p")
   (let ((move-number (cadr r))
@@ -81,10 +90,10 @@
     	(progn
     	  (eloud-speak (buffer-substring start-point (point))))))))
 
-	   
+
+(defun hyphen-start-p (string)
+  (equal (byte-to-string (aref string 0)) "-"))
       
-
-
 			
 ;;;;
 ;; Map speech functions to Emacs commands
