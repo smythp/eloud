@@ -54,7 +54,7 @@
   (interactive)
   (eloud-speak
    (buffer-substring (point) (1+ (point)))
-   nil "--punct"))
+   nil t "--punct"))
 
 (defun eloud-last-character (&rest r)
   (eloud-speak
@@ -85,5 +85,20 @@
 		(advice-remove target-function speech-function))))
 	  advice-map))
 
+;;;;
+;; Define mode
+;;;;
 
-;; (map-commands-to-speech-functions advice-map)
+(defun eloud-toggle ()
+  "Toggles eloud on or off. Hooked on eloud-mode toggle. Use eloud-mode to turn eloud on or off."
+  (if eloud-mode
+      (progn
+	(map-commands-to-speech-functions advice-map)
+	(eloud-speak "eloud on"))
+    (progn
+      (map-commands-to-speech-functions advice-map t)
+      (eloud-speak "eloud off"))))
+
+(define-minor-mode eloud-mode "Minor mode for reading text aloud." nil " eloud" :global t)
+
+(add-hook 'eloud-mode-hook 'eloud-toggle)
