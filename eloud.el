@@ -56,10 +56,6 @@
   (eloud-speak
    (buffer-substring (1- (point)) (point))
    eloud-speech-rate t "--punct"))
-  
-
-
-
 
 ;;;;
 ;; Map speech functions to Emacs commands
@@ -85,4 +81,4 @@
 		(advice-remove target-function speech-function))))
 	  advice-map))
 
-;; (map-commands-to-speech-functions advice-map t)
+;; (map-commands-to-speech-functions advice-map)
