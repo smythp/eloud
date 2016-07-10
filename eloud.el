@@ -1,13 +1,17 @@
 (setq eloud-speech-rate 270)
+(setq eloud-espeak-path "/usr/bin/espeak")
+
+
+(require 'cl)
 
 (defun eloud-speak (string &optional speed no-kill &rest args)
   "Take a string and pass it to the espeak asynchronous process. Uses the eloud-speech-rate variable if no optional integer speed is specified. Pass additional arguments to espeak as rest arguments. If kill argument non-nil, running speech processes are killed before starting new speech process."
   ;; Defines a function that runs process on list of arguments.
   ;; Defines sensible defaults.
   ;; Run with defaults if no additional args specified in function call, else append additional arguments and run
-  (flet ((speak (full-args-list)
+  (cl-flet ((speak (full-args-list)
 		(apply 'start-process full-args-list)))
-    (let ((default-args `("eloud-speaking" nil "espeak" ,string "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate)))))
+    (let ((default-args `("eloud-speaking" nil ,eloud-espeak-path ,string "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate)))))
       (progn
 	(if (not no-kill)
 	    (progn
@@ -80,5 +84,6 @@
 		  (advice-add target-function :after speech-function)
 		(advice-remove target-function speech-function))))
 	  advice-map))
+
 
 ;; (map-commands-to-speech-functions advice-map)
