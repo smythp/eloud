@@ -1,5 +1,8 @@
-(setq eloud-speech-rate 270)
-(setq eloud-espeak-path "/usr/bin/espeak")
+(defcustom eloud-speech-rate 270 "Integer from 1 to 400. Sets speech rate for espeak.")
+(defcustom eloud-espeak-path "/usr/bin/espeak" "Path to espeak.")
+
+(defvar 
+
 
 
 (require 'cl)
@@ -65,17 +68,19 @@
    eloud-speech-rate t "--punct"))
 
 
-(defun eloud-word (&optional arg forward)
+(defun etest (&rest r)
   "Reads arg words back or forward. If arg is nil, reads one word by default. If forward is non-nil, reads forward arg words instead."
   (interactive "^p")
-  (progn
-    (let ((start-point (point)))
+  (let ((move-number (cadr r))
+	(old-func (car r))
+	(additional-args (cddr r))
+	(start-point (point)))
+    (progn
+      (funcall old-func move-number)
       (save-excursion
-	(progn
-	  (if forward
-	      (forward-word arg)
-	    (backward-word arg))
-	  (eloud-speak (buffer-substring start-point (point))))))))
+    	(progn
+    	  (eloud-speak (buffer-substring start-point (point))))))))
+
 	   
       
 
@@ -93,6 +98,8 @@
 		   (backward-char . eloud-character-at-point)
 		   (self-insert-command . eloud-last-character)
 		   (beginning-of-buffer . eloud-whole-buffer)))
+
+(setq around-map '((backward-word . eloud-word)))
 
 
 (defun map-commands-to-speech-functions (advice-map &optional unmap)
