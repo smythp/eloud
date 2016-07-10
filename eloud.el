@@ -86,4 +86,4 @@
 	  advice-map))
 
 
-(map-commands-to-speech-functions advice-map)
+;; (map-commands-to-speech-functions advice-map)
