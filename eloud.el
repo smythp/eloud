@@ -1,7 +1,7 @@
 (setq eloud-speech-rate 270)
 
-(defun eloud-speak (string &optional speed &rest args)
-  "Take a string and pass it to the espeak asynchronous process. Uses the eloud-speech-rate variable if no optional integer speed is specified. Pass additional arguments to espeak as rest arguments."
+(defun eloud-speak (string &optional speed no-kill &rest args)
+  "Take a string and pass it to the espeak asynchronous process. Uses the eloud-speech-rate variable if no optional integer speed is specified. Pass additional arguments to espeak as rest arguments. If kill argument non-nil, running speech processes are killed before starting new speech process."
   ;; Defines a function that runs process on list of arguments.
   ;; Defines sensible defaults.
   ;; Run with defaults if no additional args specified in function call, else append additional arguments and run
@@ -9,12 +9,14 @@
 		(apply 'start-process full-args-list)))
     (let ((default-args `("eloud-speaking" nil "espeak" ,string "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate)))))
       (progn
-	  (progn
-	    (start-process "kill-espeak" nil "killall" "espeak")
-	    (sleep-for .5)
-	    (speak (if (not args)
-		       default-args
-		     (append default-args args))))))))
+	(if (not no-kill)
+	    (progn
+	      (start-process "kill-espeak" nil "killall" "espeak")
+	      (sleep-for .5)))
+	(speak (if (not args)
+		   default-args
+		 (append default-args args)))))))
+
 
 ;;;;
 ;; Speech functions
@@ -26,6 +28,8 @@
   (eloud-speak 
    (buffer-substring (point) (line-end-position))))
 
+;; (move-beginning-of-line) function requires an additional argument (nil)
+;; This function handles this requirement 
 (defun eloud-rest-of-line-override (&rest r)
   (eloud-rest-of-line))
 
@@ -48,8 +52,7 @@
   (eloud-speak
    (buffer-substring (point) (1+ (point)))
    nil "--punct"))
-   
-	       
+
 		      
 ;;;;
 ;; Map speech functions to Emacs commands
@@ -74,4 +77,4 @@
 		(advice-remove target-function speech-function))))
 	  advice-map))
 
-(map-commands-to-speech-functions advice-map)
+;; (map-commands-to-speech-functions advice-map t)
