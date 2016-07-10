@@ -102,3 +102,6 @@
 (define-minor-mode eloud-mode "Minor mode for reading text aloud." nil " eloud" :global t)
 
 (add-hook 'eloud-mode-hook 'eloud-toggle)
+
+
+(provide 'eloud)
