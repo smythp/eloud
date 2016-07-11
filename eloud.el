@@ -62,10 +62,26 @@
    nil t "--punct"))
 
 
+;; (defun eloud-last-character (&rest r)
+;;   (eloud-speak
+;;    (buffer-substring (1- (point)) (point))
+;;    eloud-speech-rate t "--punct"))
+
+
 (defun eloud-last-character (&rest r)
-  (eloud-speak
-   (buffer-substring (1- (point)) (point))
-   eloud-speech-rate t "--punct"))
+  (interactive "^p")
+  (let* ((old-func (car r))
+	(n (cadr r))
+	(other-args (cddr r))
+	(cmd (this-command-keys))
+	(last-char-cmd (byte-to-string (car (last (string-to-list cmd))))))
+    (progn 
+      (funcall old-func n)
+      (eloud-speak
+       (if (> n 1)
+	   (concat (number-to-string n) " times " last-char-cmd)
+	 last-char-cmd)
+       eloud-speech-rate t "--punct"))))
 
 
 (defun eloud-word (&rest r)
@@ -92,11 +108,11 @@
 		   (move-beginning-of-line . eloud-rest-of-line-override)
 		   (forward-char . eloud-character-at-point)
 		   (backward-char . eloud-character-at-point)
-		   (self-insert-command . eloud-last-character)
 		   (beginning-of-buffer . eloud-whole-buffer)))
 
 (defvar around-map '((backward-word . eloud-word)
-		   (forward-word . eloud-word)))
+		     (forward-word . eloud-word)
+		     (self-insert-command . eloud-last-character)))
 
 
 (defun map-commands-to-speech-functions (advice-map advice-type &optional unmap)
