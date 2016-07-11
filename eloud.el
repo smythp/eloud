@@ -84,8 +84,8 @@
        eloud-speech-rate t "--punct"))))
 
 
-(defun eloud-word (&rest r)
-  "Reads arg words back or forward. If arg is nil, reads one word by default. If forward is non-nil, reads forward arg words instead."
+(defun eloud-moved-point (&rest r)
+  "After point is moved, read the difference between new point and old point. Used to advise functions."
   (interactive "^p")
   (let ((move-number (cadr r))
 	(old-func (car r))
@@ -110,8 +110,10 @@
 		   (backward-char . eloud-character-at-point)
 		   (beginning-of-buffer . eloud-whole-buffer)))
 
-(defvar around-map '((backward-word . eloud-word)
-		     (forward-word . eloud-word)
+(defvar around-map '((backward-word . eloud-moved-point)
+		     (forward-word . eloud-moved-point)
+		     (forward-sentence . eloud-moved-point)
+		     (backward-sentence . eloud-moved-point)
 		     (self-insert-command . eloud-last-character)))
 
 
