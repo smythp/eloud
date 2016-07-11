@@ -104,11 +104,13 @@
 
 
 (defvar after-map '((next-line . eloud-rest-of-line)
-		   (previous-line . eloud-rest-of-line)
-		   (move-beginning-of-line . eloud-rest-of-line-override)
-		   (forward-char . eloud-character-at-point)
-		   (backward-char . eloud-character-at-point)
-		   (beginning-of-buffer . eloud-whole-buffer)))
+		    (previous-line . eloud-rest-of-line)
+		    (dired-next-line . eloud-rest-of-line)
+		    (dired-previous-line . eloud-rest-of-line)
+		    (move-beginning-of-line . eloud-rest-of-line-override)
+		    (forward-char . eloud-character-at-point)
+		    (backward-char . eloud-character-at-point)
+		    (beginning-of-buffer . eloud-whole-buffer)))
 
 (defvar around-map '((backward-word . eloud-moved-point)
 		     (forward-word . eloud-moved-point)
