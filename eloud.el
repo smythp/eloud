@@ -1,11 +1,11 @@
 (defcustom eloud-speech-rate 270 "Integer from 1 to 400. Sets speech rate for espeak.")
 (defcustom eloud-espeak-path "/usr/bin/espeak" "Path to espeak.")
 
-(defvar 
-
-
 
 (require 'cl)
+
+(defun hyphen-start-p (string)
+  (equal (byte-to-string (aref string 0)) "-"))
 
 (defun eloud-speak (string &optional speed no-kill &rest args)
   "Take a string and pass it to the espeak asynchronous process. Uses the eloud-speech-rate variable if no optional integer speed is specified. Pass additional arguments to espeak as rest arguments. If kill argument non-nil, running speech processes are killed before starting new speech process."
@@ -14,7 +14,7 @@
   ;; Run with defaults if no additional args specified in function call, else append additional arguments and run
   (cl-flet ((speak (full-args-list)
 		(apply 'start-process full-args-list)))
-    (let ((default-args `("eloud-speaking" nil ,eloud-espeak-path ,string "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate)))))
+    (let ((default-args `("eloud-speaking" nil ,eloud-espeak-path ,(if (hyphen-start-p string) (concat " " string) string) "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate)))))
       (progn
 	(if (not no-kill)
 	    (progn
@@ -25,13 +25,8 @@
 		 (append default-args args)))))))
 
 
-(string-to-char "foo")
 
-(defun insert-space-if-hyphen-in-string (string)
-  (if (equal (string-to-char string) '\-)
-    'yes 'no))
 
-(insert-space-if-hyphen-in-string "-foo")
 
 ;;;;
 ;; Speech functions
@@ -91,9 +86,8 @@
     	  (eloud-speak (buffer-substring start-point (point))))))))
 
 
-(defun hyphen-start-p (string)
-  (equal (byte-to-string (aref string 0)) "-"))
-      
+
+
 			
 ;;;;
 ;; Map speech functions to Emacs commands
