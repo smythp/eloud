@@ -85,16 +85,13 @@
     	(progn
     	  (eloud-speak (buffer-substring start-point (point))))))))
 
-
-
-
 			
 ;;;;
 ;; Map speech functions to Emacs commands
 ;;;;
 
 
-(setq advice-map '((next-line . eloud-rest-of-line)
+(setq after-map '((next-line . eloud-rest-of-line)
 		   (previous-line . eloud-rest-of-line)
 		   (move-beginning-of-line . eloud-rest-of-line-override)
 		   (forward-char . eloud-character-at-point)
@@ -102,16 +99,17 @@
 		   (self-insert-command . eloud-last-character)
 		   (beginning-of-buffer . eloud-whole-buffer)))
 
-(setq around-map '((backward-word . eloud-word)))
+(setq around-map '((backward-word . eloud-word)
+		   (forward-word . eloud-word)))
 
 
-(defun map-commands-to-speech-functions (advice-map &optional unmap)
-  "Takes list of cons cells mapping movement commands to eloud speech functions. See variable advice-map for example. If optional upmap parameter is t, removes all bound advice functions instead."
+(defun map-commands-to-speech-functions (advice-map advice-type &optional unmap)
+  "Takes list of cons cells mapping movement commands to eloud speech functions. See variable after-map for example. If optional upmap parameter is t, removes all bound advice functions instead."
   (mapcar (lambda (x)
 	    (let ((target-function (car x))
 		  (speech-function (cdr x)))
 	      (if (not unmap)
-		  (advice-add target-function :after speech-function)
+		  (advice-add target-function advice-type speech-function)
 		(advice-remove target-function speech-function))))
 	  advice-map))
 
@@ -123,10 +121,11 @@
   "Toggles eloud on or off. Hooked on eloud-mode toggle. Use eloud-mode to turn eloud on or off."
   (if eloud-mode
       (progn
-	(map-commands-to-speech-functions advice-map)
+	(map-commands-to-speech-functions after-map :after)
+	(map-commands-to-speech-functions around-map :around)
 	(eloud-speak "eloud on"))
     (progn
-      (map-commands-to-speech-functions advice-map t)
+      (map-commands-to-speech-functions after-map t)
       (eloud-speak "eloud off"))))
 
 (define-minor-mode eloud-mode "Minor mode for reading text aloud." nil " eloud" :global t)
