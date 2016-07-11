@@ -24,10 +24,6 @@
 		   default-args
 		 (append default-args args)))))))
 
-
-
-
-
 ;;;;
 ;; Speech functions
 ;;;;
@@ -91,7 +87,7 @@
 ;;;;
 
 
-(setq after-map '((next-line . eloud-rest-of-line)
+(defvar after-map '((next-line . eloud-rest-of-line)
 		   (previous-line . eloud-rest-of-line)
 		   (move-beginning-of-line . eloud-rest-of-line-override)
 		   (forward-char . eloud-character-at-point)
@@ -99,7 +95,7 @@
 		   (self-insert-command . eloud-last-character)
 		   (beginning-of-buffer . eloud-whole-buffer)))
 
-(setq around-map '((backward-word . eloud-word)
+(defvar around-map '((backward-word . eloud-word)
 		   (forward-word . eloud-word)))
 
 
@@ -125,7 +121,8 @@
 	(map-commands-to-speech-functions around-map :around)
 	(eloud-speak "eloud on"))
     (progn
-      (map-commands-to-speech-functions after-map t)
+      (map-commands-to-speech-functions after-map nil t)
+      (map-commands-to-speech-functions around-map nil t)
       (eloud-speak "eloud off"))))
 
 (define-minor-mode eloud-mode "Minor mode for reading text aloud." nil " eloud" :global t)
