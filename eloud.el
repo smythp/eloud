@@ -56,17 +56,11 @@
 
 
 (defun eloud-character-at-point ()
-  "Read character at point aloud."
+  "Read aloud the character at point."
   (interactive)
   (eloud-speak
    (buffer-substring (point) (1+ (point)))
    nil t "--punct"))
-
-
-;; (defun eloud-last-character (&rest r)
-;;   (eloud-speak
-;;    (buffer-substring (1- (point)) (point))
-;;    eloud-speech-rate t "--punct"))
 
 
 (defun eloud-last-character (&rest r)
@@ -78,11 +72,15 @@
 	(last-char-cmd (byte-to-string (car (last (string-to-list cmd))))))
     (progn 
       (funcall old-func n)
-      (eloud-speak
-       (if (> n 1)
-	   (concat (number-to-string n) " times " last-char-cmd)
-	 last-char-cmd)
-       eloud-speech-rate t "--punct"))))
+      (let ((word (save-excursion (search-backward " " (line-beginning-position) t 2))))
+	(if (equal cmd " ")
+	    (eloud-speak
+	     (buffer-substring (point) (if word word (line-beginning-position)))))
+	(eloud-speak
+	 (if (> n 1)
+	     (concat (number-to-string n) " times " last-char-cmd)
+	   last-char-cmd)
+	 eloud-speech-rate t "--punct")))))
 
 
 (defun eloud-moved-point (&rest r)
