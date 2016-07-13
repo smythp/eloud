@@ -28,16 +28,17 @@
 ;; Speech functions
 ;;;;
 
-(defun eloud-rest-of-line (&optional pre)
-  "Speak remainder of line aloud."
-  (interactive "^p")
-  (eloud-speak 
-   (buffer-substring (point) (line-end-position))))
 
-;; (move-beginning-of-line) function requires an additional argument (nil)
-;; This function handles this requirement 
-(defun eloud-rest-of-line-override (&rest r)
-  (eloud-rest-of-line))
+(defun eloud-rest-of-line (&rest r)
+  (interactive "^p")
+  (let ((move-number (cadr r))
+  	(old-func (car r))
+  	(additional-args (cddr r)))
+    (progn
+      (funcall old-func move-number)
+      (let ((point-to-end-of-line (buffer-substring (point) (line-end-position))))
+	(if (not (equal point-to-end-of-line ""))
+	    (eloud-speak point-to-end-of-line))))))
 
 
 (defun eloud-whole-buffer ()
@@ -103,16 +104,16 @@
 ;;;;
 
 
-(defvar after-map '((next-line . eloud-rest-of-line)
-		    (previous-line . eloud-rest-of-line)
-		    (dired-next-line . eloud-rest-of-line)
-		    (dired-previous-line . eloud-rest-of-line)
-		    (move-beginning-of-line . eloud-rest-of-line-override)
-		    (forward-char . eloud-character-at-point)
+(defvar after-map '((forward-char . eloud-character-at-point)
 		    (backward-char . eloud-character-at-point)
 		    (beginning-of-buffer . eloud-whole-buffer)))
 
-(defvar around-map '((backward-word . eloud-moved-point)
+(defvar around-map '((move-beginning-of-line . eloud-rest-of-line)
+		     (dired-next-line . eloud-rest-of-line)
+		     (dired-previous-line . eloud-rest-of-line)
+		     (next-line . eloud-rest-of-line)
+		     (previous-line . eloud-rest-of-line)
+		     (backward-word . eloud-moved-point)
 		     (forward-word . eloud-moved-point)
 		     (forward-sentence . eloud-moved-point)
 		     (backward-sentence . eloud-moved-point)
