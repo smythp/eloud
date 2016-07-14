@@ -83,6 +83,16 @@
 	 eloud-speech-rate t "--punct")))))
 
 
+(defun eloud-last-kill-ring (&rest r)
+  "Read last item on killring aloud. To be used as advice."
+  (interactive "^p")
+  (let* ((old-func (car r))
+	 (n (cadr r)))
+    (progn
+      (funcall old-func n)
+      (eloud-speak (car kill-ring)))))
+
+
 (defun eloud-moved-point (&rest r)
   "After point is moved, read the difference between new point and old point. Used to advise functions."
   (interactive "^p")
@@ -107,9 +117,12 @@
 		    (beginning-of-buffer . eloud-whole-buffer)))
 
 (defvar around-map '((move-beginning-of-line . eloud-rest-of-line)
+		     (org-beginning-of-line . eloud-rest-of-line)
 		     (dired-next-line . eloud-rest-of-line)
 		     (dired-previous-line . eloud-rest-of-line)
 		     (next-line . eloud-rest-of-line)
+		     (kill-word . eloud-last-kill-ring)
+		     (backward-kill-word . eloud-moved-point)
 		     (previous-line . eloud-rest-of-line)
 		     (backward-word . eloud-moved-point)
 		     (forward-word . eloud-moved-point)
