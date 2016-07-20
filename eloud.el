@@ -20,9 +20,12 @@
 	    (progn
 	      (start-process "kill-espeak" nil "killall" "espeak")
 	      (sleep-for .5)))
-	(speak (if (not args)
-		   default-args
-		 (append default-args args)))))))
+	(if (not (equal string ""))
+	    (speak (if (not args)
+		       default-args
+		     (append default-args args))))))))
+
+	
 
 ;;;;
 ;; Speech functions
@@ -130,11 +133,12 @@
 		     (forward-word . eloud-moved-point)
 		     (forward-sentence . eloud-moved-point)
 		     (backward-sentence . eloud-moved-point)
+		     (read-from-minibuffer . eloud-read-minibuffer-prompt)
 		     (self-insert-command . eloud-last-character)))
 
 
 (defun map-commands-to-speech-functions (advice-map advice-type &optional unmap)
-  "Takes list of cons cells mapping movement commands to eloud speech functions. See variable after-map for example. If optional upmap parameter is t, removes all bound advice functions instead."
+  "Takes list of cons cells mapping movement commands to eloud speech functions. See variable after-map for example. If optional unmap parameter is t, removes all bound advice functions instead."
   (mapcar (lambda (x)
 	    (let ((target-function (car x))
 		  (speech-function (cdr x)))
@@ -142,6 +146,18 @@
 		  (advice-add target-function advice-type speech-function)
 		(advice-remove target-function speech-function))))
 	  advice-map))
+
+
+(defun eloud-read-minibuffer-prompt (&rest r)
+  (let* ((old-func (car r))
+	(prompt (cadr r))
+	(args (cdr r)))
+    (progn
+      (eloud-speak prompt)
+      (let ((output (apply old-func args)))
+;	(eloud-speak output)
+	output))))
+
 
 ;;;;
 ;; Define mode
