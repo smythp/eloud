@@ -44,11 +44,15 @@
 	    (eloud-speak point-to-end-of-line))))))
 
 
-(defun eloud-whole-buffer ()
+(defun eloud-whole-buffer (&rest r)
   "Speak whole buffer"
-  (interactive)
-  (eloud-speak
-   (buffer-substring (point-min) (point-max))))
+  (interactive "^P")
+  (let ((old-func (car r))
+  	(n (cadr r)))
+    (progn
+      (funcall  old-func n)
+      (eloud-speak
+       (buffer-substring (point-min) (point-max))))))
 
 
 (defun eloud-status-info ()
@@ -119,11 +123,10 @@
 ;;;;
 
 
-(defvar after-map '((beginning-of-buffer . eloud-whole-buffer)))
-
 
 (defvar around-map '((move-beginning-of-line . eloud-rest-of-line)
 		     (org-beginning-of-line . eloud-rest-of-line)
+		     (beginning-of-buffer . eloud-whole-buffer)
 		     (dired-next-line . eloud-rest-of-line)
 		     (forward-char . eloud-character-at-point)
 		     (backward-char . eloud-character-at-point)
@@ -143,7 +146,7 @@
 
 
 (defun map-commands-to-speech-functions (advice-map advice-type &optional unmap)
-  "Takes list of cons cells mapping movement commands to eloud speech functions. See variable after-map for example. If optional unmap parameter is t, removes all bound advice functions instead."
+  "Takes list of cons cells mapping movement commands to eloud speech functions. See variable around-map for example. If optional unmap parameter is t, removes all bound advice functions instead."
   (mapcar (lambda (x)
 	    (let ((target-function (car x))
 		  (speech-function (cdr x)))
@@ -172,11 +175,9 @@
   "Toggles eloud on or off. Hooked on eloud-mode toggle. Use eloud-mode to turn eloud on or off."
   (if eloud-mode
       (progn
-	(map-commands-to-speech-functions after-map :after)
 	(map-commands-to-speech-functions around-map :around)
 	(eloud-speak "eloud on"))
     (progn
-      (map-commands-to-speech-functions after-map nil t)
       (map-commands-to-speech-functions around-map nil t)
       (eloud-speak "eloud off"))))
 
