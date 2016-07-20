@@ -58,12 +58,16 @@
    (concat (buffer-name) " " (symbol-name major-mode))))
 
 
-(defun eloud-character-at-point ()
+(defun eloud-character-at-point (&rest r)
   "Read aloud the character at point."
-  (interactive)
-  (eloud-speak
-   (buffer-substring (point) (1+ (point)))
-   nil t "--punct"))
+  (interactive "^p")
+  (let ((old-func (car r))
+	(n (cadr r)))
+    (progn
+      (funcall old-func n)
+      (eloud-speak
+       (buffer-substring (point) (1+ (point)))
+       nil t "--punct"))))
 
 
 (defun eloud-last-character (&rest r)
@@ -115,13 +119,14 @@
 ;;;;
 
 
-(defvar after-map '((forward-char . eloud-character-at-point)
-		    (backward-char . eloud-character-at-point)
-		    (beginning-of-buffer . eloud-whole-buffer)))
+(defvar after-map '((beginning-of-buffer . eloud-whole-buffer)))
+
 
 (defvar around-map '((move-beginning-of-line . eloud-rest-of-line)
 		     (org-beginning-of-line . eloud-rest-of-line)
 		     (dired-next-line . eloud-rest-of-line)
+		     (forward-char . eloud-character-at-point)
+		     (backward-char . eloud-character-at-point)
 		     (dired-previous-line . eloud-rest-of-line)
 		     (next-line . eloud-rest-of-line)
 		     (previous-line . eloud-rest-of-line)
