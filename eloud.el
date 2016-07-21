@@ -73,9 +73,19 @@
     (eloud-speak (buffer-name))
     (buffer-name))))
 
-	       
-(advice-add 'other-window :around 'eloud-current-buffer)
 
+(defun eloud-switch-to-buffer (&rest r)
+  "Read current buffer aloud. Used as advice when switching windows."
+  (let ((old-func (car r))
+	(other-args (cdr r)))
+  (if r
+      (apply old-func other-args))
+  (progn
+    (eloud-speak (buffer-name))
+    (buffer-name))))
+
+
+	       
 (defun eloud-character-at-point (&rest r)
   "Read aloud the character at point."
   (interactive "^p")
@@ -147,6 +157,9 @@
 		     (dired-previous-line . eloud-rest-of-line)
 		     (next-line . eloud-rest-of-line)
 		     (previous-line . eloud-rest-of-line)
+		     (other-window . eloud-current-buffer)
+		     (switch-to-buffer . eloud-switch-to-buffer)
+		     (other-window . eloud-current-buffer)		     
 		     (kill-word . eloud-last-kill-ring)
 		     (backward-kill-word . eloud-last-kill-ring)
 		     (forward-button . eloud-moved-point)
