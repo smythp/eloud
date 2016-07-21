@@ -24,7 +24,6 @@
 	    (speak (if (not args)
 		       default-args
 		     (append default-args args))))))))
-
 	
 
 ;;;;
@@ -141,11 +140,20 @@
     	(progn
     	  (eloud-speak (buffer-substring start-point (point))))))))
 
+
+(defun eloud-evaluation (&rest r)
+  "Rads the output of an interactive command aloud when used as advice."
+  (interactive "P")
+  (let* ((old-func (car r))
+	(n (cadr r))
+	(other-args (cdr r))
+	(output (apply old-func other-args)))
+      (eloud-speak (prin1-to-string output))))
+
 			
 ;;;;
 ;; Map speech functions to Emacs commands
 ;;;;
-
 
 
 (defvar around-map '((move-beginning-of-line . eloud-rest-of-line)
@@ -167,6 +175,7 @@
 		     (backward-word . eloud-moved-point)
 		     (forward-word . eloud-moved-point)
 		     (forward-sentence . eloud-moved-point)
+		     (eval-last-sexp . eloud-evaluation)
 		     (backward-sentence . eloud-moved-point)
 		     (read-from-minibuffer . eloud-read-minibuffer-prompt)
 		     (self-insert-command . eloud-last-character)))
