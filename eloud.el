@@ -83,7 +83,6 @@
     (eloud-speak (buffer-name))
     (buffer-name))))
 
-
 	       
 (defun eloud-character-at-point (&rest r)
   "Read aloud the character at point."
@@ -167,7 +166,6 @@
 		     (previous-line . eloud-rest-of-line)
 		     (other-window . eloud-current-buffer)
 		     (switch-to-buffer . eloud-switch-to-buffer)
-		     (other-window . eloud-current-buffer)		     
 		     (kill-word . eloud-last-kill-ring)
 		     (backward-kill-word . eloud-last-kill-ring)
 		     (forward-button . eloud-moved-point)
@@ -177,6 +175,7 @@
 		     (forward-sentence . eloud-moved-point)
 		     (eval-last-sexp . eloud-evaluation)
 		     (backward-sentence . eloud-moved-point)
+		     (gnus-topic-select-group . eloud-rest-of-line)
 		     (read-from-minibuffer . eloud-read-minibuffer-prompt)
 		     (self-insert-command . eloud-last-character)))
 
