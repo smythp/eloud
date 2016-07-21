@@ -69,7 +69,7 @@
   (if r
       (apply old-func other-args))
   (progn
-    (eloud-speak (buffer-name))
+    (eloud-speak (concat (buffer-name) (buffer-substring (point) (point-max))))
     (buffer-name))))
 
 
