@@ -35,9 +35,22 @@
   (interactive "^p")
   (let ((move-number (cadr r))
   	(old-func (car r))
-  	(additional-args (cddr r)))
+  	(additional-args (cdr r)))
     (progn
-      (funcall old-func move-number)
+      (apply old-func additional-args)
+      (let ((point-to-end-of-line (buffer-substring (point) (line-end-position))))
+	(if (not (equal point-to-end-of-line ""))
+	    (eloud-speak point-to-end-of-line))))))
+
+
+(defun eloud-rest-of-line-delay (&rest r)
+  (interactive "^p")
+  (let ((move-number (cadr r))
+  	(old-func (car r))
+  	(additional-args (cdr r)))
+    (progn
+      (apply old-func additional-args)
+      (sit-for .5)
       (let ((point-to-end-of-line (buffer-substring (point) (line-end-position))))
 	(if (not (equal point-to-end-of-line ""))
 	    (eloud-speak point-to-end-of-line))))))
@@ -175,7 +188,7 @@
 		     (forward-sentence . eloud-moved-point)
 		     (eval-last-sexp . eloud-evaluation)
 		     (backward-sentence . eloud-moved-point)
-		     (gnus-topic-select-group . eloud-rest-of-line)
+;		     (gnus-topic-select-group . eloud-rest-of-line-delay)
 		     (read-from-minibuffer . eloud-read-minibuffer-prompt)
 		     (self-insert-command . eloud-last-character)))
 
