@@ -62,6 +62,20 @@
    (concat (buffer-name) " " (symbol-name major-mode))))
 
 
+(defun eloud-current-buffer (&rest r)
+  "Read current buffer aloud. Used as advice when switching windows."
+  (interactive "^p")
+  (let ((old-func (car r))
+	(other-args (cdr r)))
+  (if r
+      (apply old-func other-args))
+  (progn
+    (eloud-speak (buffer-name))
+    (buffer-name))))
+
+	       
+(advice-add 'other-window :around 'eloud-current-buffer)
+
 (defun eloud-character-at-point (&rest r)
   "Read aloud the character at point."
   (interactive "^p")
@@ -181,7 +195,9 @@
       (map-commands-to-speech-functions around-map nil t)
       (eloud-speak "eloud off"))))
 
+
 (define-minor-mode eloud-mode "Minor mode for reading text aloud." nil " eloud" :global t)
+
 
 (add-hook 'eloud-mode-hook 'eloud-toggle)
 
