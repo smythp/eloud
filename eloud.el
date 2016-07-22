@@ -113,7 +113,8 @@
     (eloud-speak (buffer-name))
     (buffer-name))))
 
-	       
+
+
 (defun eloud-character-at-point (&rest r)
   "Read aloud the character at point."
   (interactive "^p")
@@ -127,13 +128,25 @@
 
 
 (defun eloud-character-before-point (&rest r)
-  "Read aloud the character at point."
+  "Read aloud the character before point."
   (interactive "^p")
   (let ((old-func (car r))
 	(n (cadr r)))
     (progn
        (eloud-speak
        (buffer-substring (point) (1- (point)))
+       nil t "--punct")
+       (funcall old-func n))))
+
+
+(defun eloud-character-after-point (&rest r)
+  "Read aloud the character before point."
+  (interactive "^p")
+  (let ((old-func (car r))
+	(n (cadr r)))
+    (progn
+       (eloud-speak
+       (buffer-substring (point) (1+ (point)))
        nil t "--punct")
        (funcall old-func n))))
 
@@ -229,12 +242,13 @@
 		     (forward-word . eloud-moved-point)
 		     (forward-sentence . eloud-moved-point)
 		     (eval-last-sexp . eloud-evaluation)
+		     (delete-forward-char . eloud-character-after-point)
+		     (delete-char . eloud-character-after-point)
 		     (backward-sentence . eloud-moved-point)
 ;		     (gnus-topic-select-group . eloud-rest-of-line-delay)
 		     (read-from-minibuffer . eloud-read-minibuffer-prompt)
 		     (self-insert-command . eloud-last-character)
 		     (backward-delete-char-untabify . eloud-character-before-point)))
-
 
 
 ;;; add functions to hooks
@@ -277,7 +291,6 @@
       (let ((output (apply old-func args)))
 ;	(eloud-speak output)
 	output))))
-
 
 
 ;;; Define mode
