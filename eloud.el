@@ -68,8 +68,10 @@
 	  (apply old-func additional-args)
 	  (eloud-speak (car kill-ring)))
       (progn
-	(eloud-speak (buffer-substring (point) (line-end-position)))
-	(apply old-func additional-args)))))
+	(let ((rest-of-line (buffer-substring (point) (line-end-position))))
+	  (if (not (equal rest-of-line ""))
+	      (eloud-speak (buffer-substring (point) (line-end-position))))
+	  (apply old-func additional-args))))))
 
 
 (defun eloud-whole-buffer (&rest r)
