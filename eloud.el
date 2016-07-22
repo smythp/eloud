@@ -162,7 +162,7 @@
 	(output (apply old-func other-args)))
       (eloud-speak (prin1-to-string output))))
 
-			
+
 ;;;;
 ;; Map speech functions to Emacs commands
 ;;;;
@@ -193,6 +193,16 @@
 		     (self-insert-command . eloud-last-character)))
 
 
+;;;;
+;; Hooks
+;;;;
+
+(defvar hook-map '((gnus-summary-prepared-hook . (lambda () (progn (sit-for .3) (eloud-rest-of-line (lambda () nil)))))))
+
+
+
+
+
 (defun map-commands-to-speech-functions (advice-map advice-type &optional unmap)
   "Takes list of cons cells mapping movement commands to eloud speech functions. See variable around-map for example. If optional unmap parameter is t, removes all bound advice functions instead."
   (mapcar (lambda (x)
@@ -202,6 +212,27 @@
 		  (advice-add target-function advice-type speech-function)
 		(advice-remove target-function speech-function))))
 	  advice-map))
+
+
+(defun map-commands-to-hooks (hook-map &optional unmap)
+  "Map speech functions to hooks. If unmap is non-nil, removes the added functions."
+  (mapcar (lambda (x)
+	    (progn
+	      (if (not (boundp (car x)))
+		  (set (car x)  nil))
+	      (let ((hook-variable (car x))
+		    (function-to-add (cdr x)))
+		(if (not unmap)
+		    (push function-to-add (symbol-value hook-variable))
+		  (set hook-variable (remove function-to-add (symbol-value hook-variable)))))))
+	  hook-map))
+
+
+;; (map-commands-to-hooks hook-map t)
+
+;; (setq gnus-summary-prepared-hook '())
+
+;; (funcall (lambda () (push (lambda () nil) gnus-summary-prepared-hook)))
 
 
 (defun eloud-read-minibuffer-prompt (&rest r)
@@ -224,9 +255,11 @@
   (if eloud-mode
       (progn
 	(map-commands-to-speech-functions around-map :around)
+	(map-commands-to-hooks hook-map)
 	(eloud-speak "eloud on"))
     (progn
       (map-commands-to-speech-functions around-map nil t)
+      (map-commands-to-hooks hook-map t)      
       (eloud-speak "eloud off"))))
 
 
