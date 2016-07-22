@@ -57,6 +57,21 @@
 	    (eloud-speak point-to-end-of-line))))))
 
 
+(defun eloud-kill-line (&rest r)
+  (interactive "P")
+  (let ((move-number (if (cadr r) (cadr r) 0))
+  	(old-func (car r))
+	(blank-line-p (equal (- (point) (line-end-position)) 0))
+  	(additional-args (cdr r)))
+    (if (> move-number 1)
+	(progn
+	  (apply old-func additional-args)
+	  (eloud-speak (car kill-ring)))
+      (progn
+	(eloud-speak (buffer-substring (point) (line-end-position)))
+	(apply old-func additional-args)))))
+
+
 (defun eloud-whole-buffer (&rest r)
   "Speak whole buffer"
   (interactive "^P")
@@ -141,15 +156,15 @@
       (eloud-speak (car kill-ring)))))
 
 
-(defun eloud-kill-line (&rest r)
-  "Alternate version of eloud-last-kill-ring for P interaction."
-  (interactive "P")
-  (let* ((old-func (car r))
-	 (n (cadr r))
-	 (other-args (cdr r)))
-    (progn
-      (eloud-speak (buffer-substring (point) (line-end-position)))
-      (apply old-func other-args))))
+;; (defun eloud-kill-line (&rest r)
+;;   "Alternate version of eloud-last-kill-ring for P interaction."
+;;   (interactive "P")
+;;   (let* ((old-func (car r))
+;; 	 (n (cadr r))
+;; 	 (other-args (cdr r)))
+;;     (progn
+;;       (eloud-speak (buffer-substring (point) (line-end-position)))
+;;       (apply old-func other-args))))
       
 
 
@@ -195,7 +210,7 @@
 		     (switch-to-buffer . eloud-switch-to-buffer)
 		     (kill-word . eloud-last-kill-ring)
 		     (backward-kill-word . eloud-last-kill-ring)
-		     (kill-line . eloud-rest-of-line)
+		     (kill-line . eloud-kill-line)
 		     (forward-button . eloud-moved-point)
 		     (backward-button . eloud-moved-point)
 		     (backward-word . eloud-moved-point)
