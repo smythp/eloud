@@ -14,7 +14,8 @@
   ;; Run with defaults if no additional args specified in function call, else append additional arguments and run
   (cl-flet ((speak (full-args-list)
 		(apply 'start-process full-args-list)))
-    (let ((default-args `("eloud-speaking" nil ,eloud-espeak-path ,(if (hyphen-start-p string) (concat " " string) string) "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate)))))
+    (let* ((string (if (equal string "") " " string))
+	  (default-args `("eloud-speaking" nil ,eloud-espeak-path ,(if (hyphen-start-p string) (concat " " string) string) "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate)))))
       (progn
 	(if (not no-kill)
 	    (progn
@@ -24,7 +25,7 @@
 	    (speak (if (not args)
 		       default-args
 		     (append default-args args))))))))
-	
+
 
 ;;;;
 ;; Speech functions
