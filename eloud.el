@@ -133,10 +133,23 @@
   "Read last item on killring aloud. To be used as advice."
   (interactive "^p")
   (let* ((old-func (car r))
-	 (n (cadr r)))
+	 (n (cadr r))
+	 (other-args (cdr r)))
     (progn
-      (funcall old-func n)
+      (apply old-func other-args)
       (eloud-speak (car kill-ring)))))
+
+
+(defun eloud-kill-line (&rest r)
+  "Alternate version of eloud-last-kill-ring for P interaction."
+  (interactive "P")
+  (let* ((old-func (car r))
+	 (n (cadr r))
+	 (other-args (cdr r)))
+    (progn
+      (eloud-speak (buffer-substring (point) (line-end-position)))
+      (apply old-func other-args))))
+      
 
 
 (defun eloud-moved-point (&rest r)
@@ -181,6 +194,7 @@
 		     (switch-to-buffer . eloud-switch-to-buffer)
 		     (kill-word . eloud-last-kill-ring)
 		     (backward-kill-word . eloud-last-kill-ring)
+		     (kill-line . eloud-rest-of-line)
 		     (forward-button . eloud-moved-point)
 		     (backward-button . eloud-moved-point)
 		     (backward-word . eloud-moved-point)
@@ -194,13 +208,10 @@
 
 
 ;;;;
-;; Hooks
+;; add functions to hooks
 ;;;;
 
 (defvar hook-map '((gnus-summary-prepared-hook . (lambda () (progn (sit-for .3) (eloud-rest-of-line (lambda () nil)))))))
-
-
-
 
 
 (defun map-commands-to-speech-functions (advice-map advice-type &optional unmap)
@@ -226,13 +237,6 @@
 		    (push function-to-add (symbol-value hook-variable))
 		  (set hook-variable (remove function-to-add (symbol-value hook-variable)))))))
 	  hook-map))
-
-
-;; (map-commands-to-hooks hook-map t)
-
-;; (setq gnus-summary-prepared-hook '())
-
-;; (funcall (lambda () (push (lambda () nil) gnus-summary-prepared-hook)))
 
 
 (defun eloud-read-minibuffer-prompt (&rest r)
