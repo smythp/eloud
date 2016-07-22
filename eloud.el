@@ -27,9 +27,8 @@
 		     (append default-args args))))))))
 
 
-;;;;
-;; Speech functions
-;;;;
+
+;;; Speech functions
 
 
 (defun eloud-rest-of-line (&rest r)
@@ -127,6 +126,18 @@
        nil t "--punct"))))
 
 
+(defun eloud-character-before-point (&rest r)
+  "Read aloud the character at point."
+  (interactive "^p")
+  (let ((old-func (car r))
+	(n (cadr r)))
+    (progn
+       (eloud-speak
+       (buffer-substring (point) (1- (point)))
+       nil t "--punct")
+       (funcall old-func n))))
+
+
 (defun eloud-last-character (&rest r)
   (interactive "^p")
   (let* ((old-func (car r))
@@ -194,9 +205,8 @@
       (eloud-speak (prin1-to-string output))))
 
 
-;;;;
-;; Map speech functions to Emacs commands
-;;;;
+
+;;; Map speech functions to Emacs commands
 
 
 (defvar around-map '((move-beginning-of-line . eloud-rest-of-line)
@@ -222,12 +232,13 @@
 		     (backward-sentence . eloud-moved-point)
 ;		     (gnus-topic-select-group . eloud-rest-of-line-delay)
 		     (read-from-minibuffer . eloud-read-minibuffer-prompt)
-		     (self-insert-command . eloud-last-character)))
+		     (self-insert-command . eloud-last-character)
+		     (backward-delete-char-untabify . eloud-character-before-point)))
 
 
-;;;;
-;; add functions to hooks
-;;;;
+
+;;; add functions to hooks
+
 
 (defvar hook-map '((gnus-summary-prepared-hook . (lambda () (progn (sit-for .3) (eloud-rest-of-line (lambda () nil)))))))
 
@@ -268,9 +279,9 @@
 	output))))
 
 
-;;;;
-;; Define mode
-;;;;
+
+;;; Define mode
+
 
 (defun eloud-toggle ()
   "Toggles eloud on or off. Hooked on eloud-mode toggle. Use eloud-mode to turn eloud on or off."
