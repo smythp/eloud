@@ -17,6 +17,16 @@
     (buffer-string))))
 
 
+(defun get-char-at-point (&optional offset)
+  "Returns string of char at point or optional offset."
+  (let ((new-point (if offset
+		       (+ (point) offset)
+		     (point))))
+    (string (char-after (cond ((> new-point (point-max)) (1- (point-max)))
+			      ((< new-point (point-min)) (point-min))
+			      (t new-point))))))
+
+
 ;;; Main speech function
 
 (defun eloud-speak (string &optional speed no-kill &rest args)
