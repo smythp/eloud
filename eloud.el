@@ -17,13 +17,15 @@
     (buffer-string))))
 
 
-(defun get-char-at-point (&optional offset)
-  "Returns string of char at point or optional offset."
-  (let ((new-point (if offset
+(defun get-char-at-point (&optional offset return-edge)
+  "Returns string of char at point or optional offset. If optional return-edge is non-nil, returns character at point min or point max if point with offset exceed buffer size, else return an empty string."
+  (let* ((new-point (if offset
 		       (+ (point) offset)
-		     (point))))
-    (string (char-after (cond ((> new-point (point-max)) (1- (point-max)))
-			      ((< new-point (point-min)) (point-min))
+		     (point)))
+	(past-max-p (> new-point (point-max)))
+	(past-min-p (< new-point (point-min))))
+    (string (char-after (cond (past-max-p (1- (point-max)))
+			      (past-min-p (point-min))
 			      (t new-point))))))
 
 
@@ -161,16 +163,19 @@
   "Read aloud the character before point."
   (interactive "^p")
   (let ((old-func (car r))
-	(n (cadr r)))
+	(n (cadr r))
+	(other-args (cdr r)))
     (progn
-       (eloud-speak
-       (buffer-substring (point) (1- (point)))
-       nil t "--punct")
-       (funcall old-func n))))
+      (if (eq (point) 1)
+	  (eloud-speak "Beginning of buffer")
+	(eloud-speak
+	 (get-char-at-point -1)
+	 nil t "--punct")
+	(funcall old-func n)))))
 
 
 (defun eloud-character-after-point (&rest r)
-  "Read aloud the character before point."
+  "Read aloud the character after point."
   (interactive "^p")
   (let ((old-func (car r))
 	(n (cadr r)))
@@ -246,9 +251,6 @@
 	     (substring-no-properties (get-buffer-string "*Completions*") 96))
 	  (eloud-speak (current-word))))))
 
-      
-(advice-add 'minibuffer-complete :around 'eloud-completion)
-(advice-remove 'try-completion 'eloud-completion)
 
 ;;; Map speech functions to Emacs commands
 
@@ -275,7 +277,7 @@
 		     (forward-sentence . eloud-moved-point)
 		     (eval-last-sexp . eloud-evaluation)
 		     (delete-forward-char . eloud-character-after-point)
-		     (delete-char . eloud-character-after-point)
+;		     (delete-char . eloud-character-after-point)
 		     (backward-sentence . eloud-moved-point)
 		     (read-from-minibuffer . eloud-read-minibuffer-prompt)
 		     (self-insert-command . eloud-last-character)
@@ -343,8 +345,6 @@
 
 (define-minor-mode eloud-mode "Minor mode for reading text aloud." nil " eloud" :global t)
 
-
 (add-hook 'eloud-mode-hook 'eloud-toggle)
-
 
 (provide 'eloud)
