@@ -4,8 +4,10 @@
 
 (require 'cl)
 
+
 (defun hyphen-start-p (string)
   (equal (byte-to-string (aref string 0)) "-"))
+
 
 (defun eloud-speak (string &optional speed no-kill &rest args)
   "Take a string and pass it to the espeak asynchronous process. Uses the eloud-speech-rate variable if no optional integer speed is specified. Pass additional arguments to espeak as rest arguments. If kill argument non-nil, running speech processes are killed before starting new speech process."
@@ -25,7 +27,6 @@
 	    (speak (if (not args)
 		       default-args
 		     (append default-args args))))))))
-
 
 
 ;;; Speech functions
@@ -114,7 +115,6 @@
     (buffer-name))))
 
 
-
 (defun eloud-character-at-point (&rest r)
   "Read aloud the character at point."
   (interactive "^p")
@@ -146,8 +146,8 @@
 	(n (cadr r)))
     (progn
        (eloud-speak
-       (buffer-substring (point) (1+ (point)))
-       nil t "--punct")
+	(buffer-substring (point) (1+ (point)))
+	nil t "--punct")
        (funcall old-func n))))
 
 
@@ -180,18 +180,6 @@
     (progn
       (apply old-func other-args)
       (eloud-speak (car kill-ring)))))
-
-
-;; (defun eloud-kill-line (&rest r)
-;;   "Alternate version of eloud-last-kill-ring for P interaction."
-;;   (interactive "P")
-;;   (let* ((old-func (car r))
-;; 	 (n (cadr r))
-;; 	 (other-args (cdr r)))
-;;     (progn
-;;       (eloud-speak (buffer-substring (point) (line-end-position)))
-;;       (apply old-func other-args))))
-      
 
 
 (defun eloud-moved-point (&rest r)
@@ -245,7 +233,6 @@
 		     (delete-forward-char . eloud-character-after-point)
 		     (delete-char . eloud-character-after-point)
 		     (backward-sentence . eloud-moved-point)
-;		     (gnus-topic-select-group . eloud-rest-of-line-delay)
 		     (read-from-minibuffer . eloud-read-minibuffer-prompt)
 		     (self-insert-command . eloud-last-character)
 		     (backward-delete-char-untabify . eloud-character-before-point)))
