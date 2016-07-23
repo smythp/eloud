@@ -5,9 +5,19 @@
 (require 'cl)
 
 
+;;; Helper functions
+
 (defun hyphen-start-p (string)
   (equal (byte-to-string (aref string 0)) "-"))
 
+
+(defun get-buffer-string (buffer)
+  (save-excursion
+  (with-current-buffer buffer
+    (buffer-string))))
+
+
+;;; Main speech function
 
 (defun eloud-speak (string &optional speed no-kill &rest args)
   "Take a string and pass it to the espeak asynchronous process. Uses the eloud-speech-rate variable if no optional integer speed is specified. Pass additional arguments to espeak as rest arguments. If kill argument non-nil, running speech processes are killed before starting new speech process."
@@ -216,6 +226,19 @@
       (eloud-speak (prin1-to-string output))))
 
 
+(defun eloud-completion (&rest r)
+  (let* ((old-func (car r))
+	 (other-args (cdr r))
+	 (initial-point (point)))
+    (if (apply old-func other-args)
+	(if (equal initial-point (point))
+	    (eloud-speak
+	     (substring-no-properties (get-buffer-string "*Completions*") 96))
+	  (eloud-speak (current-word))))))
+
+      
+(advice-add 'minibuffer-complete :around 'eloud-completion)
+(advice-remove 'try-completion 'eloud-completion)
 
 ;;; Map speech functions to Emacs commands
 
@@ -246,6 +269,7 @@
 		     (backward-sentence . eloud-moved-point)
 		     (read-from-minibuffer . eloud-read-minibuffer-prompt)
 		     (self-insert-command . eloud-last-character)
+		     (minibuffer-complete . eloud-completion)
 		     (backward-delete-char-untabify . eloud-character-before-point)))
 
 
