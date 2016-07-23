@@ -44,6 +44,16 @@
 	    (eloud-speak point-to-end-of-line))))))
 
 
+(defun eloud-dabbrev (&rest r)
+  "Advice for reading expanded dabbrev."
+  (interactive "*P")
+  (let ((old-func (car r))
+  	(additional-args (cdr r))
+  	(initial-point (point)))
+    (apply old-func additional-args)
+    (eloud-speak dabbrev--last-expansion)))
+
+
 (defun eloud-rest-of-line-delay (&rest r)
   (interactive "^p")
   (let ((move-number (cadr r))
@@ -213,6 +223,7 @@
 (defvar around-map '((move-beginning-of-line . eloud-rest-of-line)
 		     (org-beginning-of-line . eloud-rest-of-line)
 		     (beginning-of-buffer . eloud-whole-buffer)
+		     (dabbrev-expand . eloud-dabbrev)
 		     (dired-next-line . eloud-rest-of-line)
 		     (forward-char . eloud-character-at-point)
 		     (backward-char . eloud-character-at-point)
