@@ -168,16 +168,45 @@
   (let ((old-func (car r))
 	(n (cadr r))
 	(other-args (cdr r)))
-    (progn
-      (if (eq (point) 1)
-	  (eloud-speak "Beginning of buffer")
+    (if (= (point) 1)
+	(eloud-speak "Beginning of buffer")
+      (progn	 
 	(eloud-speak
 	 (get-char-at-point -1)
 	 nil t "--punct")
-	(funcall old-func n)))))
+	(apply old-func other-args)))))
 
 
 (defun eloud-character-after-point (&rest r)
+  "Read aloud the character after point."
+  (interactive "^p")
+  (let ((old-func (car r))
+	(n (cadr r))
+	(other-args (cdr r)))
+    (if (or (<= n 0))
+	(apply old-func other-args)	
+      (if (= (point) (point-max))
+	  (progn
+	    (eloud-speak "end of buffer")
+	    (apply old-func other-args))
+	(progn
+	  (eloud-speak
+	   (get-char-at-point)
+	   nil t "--punct")
+	  (apply old-func other-args))))))
+
+
+(defun eloud-delete-override (&rest r)
+  "Override for delete-forward-char. Solves issue with delete-forward-char calling delete-char."
+  (interactive "^p")
+  (delete-char (cadr r)))
+
+
+;; (advice-add 'backward-delete-char-untabify :around 'eloud-character-before-point)
+;; (advice-remove 'backward-delete-char-untabify 'eloud-character-before-point)
+
+
+(defun eloud-delete-forward (&rest r)
   "Read aloud the character after point."
   (interactive "^p")
   (let ((old-func (car r))
@@ -284,8 +313,8 @@
 		     (forward-word . eloud-moved-point)
 		     (forward-sentence . eloud-moved-point)
 		     (eval-last-sexp . eloud-evaluation)
-		     (delete-forward-char . eloud-character-after-point)
-;		     (delete-char . eloud-character-after-point)
+		     (delete-forward-char . eloud-delete-override)
+		     (delete-char . eloud-character-after-point)
 		     (backward-sentence . eloud-moved-point)
 		     (read-from-minibuffer . eloud-read-minibuffer-prompt)
 		     (self-insert-command . eloud-last-character)
