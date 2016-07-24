@@ -180,10 +180,13 @@
   (let ((old-func (car r))
 	(n (cadr r)))
     (progn
-       (eloud-speak
-	(buffer-substring (point) (1+ (point)))
+      (eloud-speak
+       (get-char-at-point)
 	nil t "--punct")
-       (funcall old-func n))))
+      (funcall old-func n))))
+
+
+(advice-add 'delete-forward-char :around 'eloud-character-after-point)
 
 
 (defun eloud-last-character (&rest r)
