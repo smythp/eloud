@@ -22,11 +22,14 @@
   (let* ((new-point (if offset
 		       (+ (point) offset)
 		     (point)))
-	(past-max-p (> new-point (point-max)))
-	(past-min-p (< new-point (point-min))))
+	(past-max-p (>= new-point (point-max)))
+	(past-min-p (<= new-point (point-min))))
     (string (char-after (cond (past-max-p (1- (point-max)))
-			      (past-min-p (point-min))
-			      (t new-point))))))
+    			      (past-min-p (point-min))
+    			      (t new-point))))))
+    ;; (cond (past-max-p (print "max"))
+    ;; 	  (past-min-p (print "min"))
+    ;; 	  (t (print "else")))))
 
 
 ;;; Main speech function
@@ -179,14 +182,16 @@
   (interactive "^p")
   (let ((old-func (car r))
 	(n (cadr r)))
-    (progn
-      (eloud-speak
-       (get-char-at-point)
-	nil t "--punct")
-      (funcall old-func n))))
+    (if (= (point) (point-max))
+	(eloud-speak "end of buffer")
+      (progn
+    	(eloud-speak
+    	 (get-char-at-point)
+    	 nil t "--punct")
+    	(funcall old-func n)))))
 
-
-(advice-add 'delete-forward-char :around 'eloud-character-after-point)
+  
+;(advice-add 'delete-forward-char :around 'eloud-character-after-point)
 
 
 (defun eloud-last-character (&rest r)
