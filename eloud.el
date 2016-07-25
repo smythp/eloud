@@ -29,7 +29,7 @@
 
 ;;     sudo apt-get install espeak 
 
-'' On OSX, use:
+;; On OSX, use:
 
 ;;     brew install espeak
 
@@ -399,13 +399,15 @@
 		     (read-from-minibuffer . eloud-read-minibuffer-prompt)
 		     (self-insert-command . eloud-last-character)
 		     (minibuffer-complete . eloud-completion)
-		     (backward-delete-char-untabify . eloud-character-before-point)))
+		     (backward-delete-char-untabify . eloud-character-before-point))
+		     "Holds a list of cons cells used to map advice onto functions.")
 
 
 ;;; add functions to hooks
 
 
-(defvar hook-map '((gnus-summary-prepared-hook . (lambda () (progn (sit-for .3) (eloud-rest-of-line (lambda () nil)))))))
+(defvar hook-map '((gnus-summary-prepared-hook . (lambda () (progn (sit-for .3) (eloud-rest-of-line (lambda () nil))))))
+  "List of concs cells to map functions onto hooks when Eloud is initialized.")
 
 
 (defun map-commands-to-speech-functions (advice-map advice-type &optional unmap)
