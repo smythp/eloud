@@ -183,17 +183,19 @@
   (let ((old-func (car r))
 	(n (cadr r))
 	(other-args (cdr r)))
-    (if (or (<= n 0))
-	(apply old-func other-args)	
-      (if (= (point) (point-max))
-	  (progn
-	    (eloud-speak "end of buffer")
-	    (apply old-func other-args))
-	(progn
-	  (eloud-speak
-	   (get-char-at-point)
-	   nil t "--punct")
-	  (apply old-func other-args))))))
+    (if (called-interactively-p)
+	(if (or (<= n 0))
+	    (apply old-func other-args)	
+	  (if (= (point) (point-max))
+	      (progn
+		(eloud-speak "end of buffer")
+		(apply old-func other-args))
+	    (progn
+	      (eloud-speak
+	       (get-char-at-point)
+	       nil t "--punct")
+	      (apply old-func other-args))))
+      (apply old-func other-args))))
 
 
 (defun eloud-delete-override (&rest r)
