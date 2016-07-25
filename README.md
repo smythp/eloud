@@ -1,6 +1,6 @@
 ## Eloud
 
-A lightweight screen reader for Emacs.
+A lightweight, interactive screen reader for Emacs.
 
 
 ### Overview
@@ -45,7 +45,14 @@ Finally, set the path to espeak by adding this to your .emacs:
     git clone https://github.com/smythp/eloud.git
     (add-to-list 'load-path "~/eloud/")	
 	(setq eloud-espeak-path "~/eloud/")	
-	
+
+### Using Eloud
+
+Enable Eloud with `M-x eloud-mode`. Once enabled, use normal Emacs navigation keys to move around the buffer. As you move over characters, words, lines, and sentences, Eloud will read with you. To read the whole buffer, use the `beginning-of-buffer` function (bound to M-< by default). Eloud will also read minibuffer prompts, dabbrev completion, and spellcheck.
+
+There are still many edge cases in Emacs not covered by Eloud. Please open issues or make pull requests when you encounter situations not covered by Eloud.
+
+
 ## Eloud or Emacspeak?
 
 Use Eloud if:
