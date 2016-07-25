@@ -1,3 +1,63 @@
+;;; eloud.el --- A lightweight, interactive screen reader for Emacs. 
+
+;; Copyright (C) 2016  Patrick Smyth
+
+;; Author: Patrick Smyth <patricksmyth01@gmail.com>
+;; Homepage: https://github.com/smythp/eloud
+;; Keywords:extensions
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary: Eloud is a a lightweight screen reader for Emacs. It uses the espeak speech synthesizer as a backend.
+
+;; Installation
+
+;; 1. Install espeak
+
+;; First, install espeak. On Ubuntu or Debian, use:
+
+;;     sudo apt-get install espeak 
+
+'' On OSX, use:
+
+;;     brew install espeak
+
+;; Or find the compiled version at http://espeak.sourceforge.net/download.html
+
+;; 2. Install the package
+
+;; Clone this repo:
+
+;;     cd ~
+;;     git clone https://github.com/smythp/eloud.git
+
+;; Add the load path to your .emacs:
+
+;;     (add-to-list 'load-path "~/eloud/")
+
+;; Finally, set the path to espeak by adding this to your .emacs:
+
+;;     (setq eloud-espeak-path "~/eloud/")
+;; Quick install
+
+;;     cd ~
+;;     git clone https://github.com/smythp/eloud.git
+;;     (add-to-list 'load-path "~/eloud/") 
+;;     (setq eloud-espeak-path "~/eloud/") 
+
+;;; Code:
+
 (defcustom eloud-speech-rate 270 "Integer from 1 to 400. Sets speech rate for espeak.")
 (defcustom eloud-espeak-path "/usr/bin/espeak" "Path to espeak.")
 
@@ -56,6 +116,7 @@
 
 
 (defun eloud-rest-of-line (&rest r)
+  "Read from point to the rest of the line. Used as advice."
   (interactive "^p")
   (let ((move-number (cadr r))
   	(old-func (car r))
@@ -78,6 +139,7 @@
 
 
 (defun eloud-rest-of-line-delay (&rest r)
+  "Wordaround for moving to beginning of line while reading."
   (interactive "^p")
   (let ((move-number (cadr r))
   	(old-func (car r))
@@ -91,6 +153,7 @@
 
 
 (defun eloud-kill-line (&rest r)
+  "Read killed text when using kil-line. Read only last line killed, not last item in killring."
   (interactive "P")
   (let ((move-number (if (cadr r) (cadr r) 0))
   	(old-func (car r))
@@ -108,7 +171,7 @@
 
 
 (defun eloud-whole-buffer (&rest r)
-  "Speak whole buffer"
+  "Speak whole buffer. Used as advice."
   (interactive "^P")
   (let ((old-func (car r))
   	(n (cadr r)))
@@ -138,7 +201,7 @@
 
 
 (defun eloud-switch-to-buffer (&rest r)
-  "Read current buffer aloud. Used as advice when switching windows."
+  "Read current buffer aloud after switch. Used as advice when switching windows."
   (let ((old-func (car r))
 	(other-args (cdr r)))
     (if (called-interactively-p)
@@ -150,6 +213,7 @@
 
 
 (defun eloud-ispell-command-loop (&rest r)
+  "When used as advice on ispell-command-loop, reads the word being corrected along and then reads each possible correction in turn."
   (let ((old-func (car r))
 	(correction-list (car (cdr r)))
 	(other-args (cdr r))
@@ -293,6 +357,7 @@
 
 
 (defun eloud-completion (&rest r)
+  "When used as advice on minibuffer-complete, reads completion."
   (let* ((old-func (car r))
 	 (other-args (cdr r))
 	 (initial-point (point)))
@@ -401,3 +466,12 @@
 
 (provide 'eloud)
 
+
+
+
+;;; eloud.el ends here
+
+;; Copyright (C) 2016  Patrick Smyth
+
+;; Author: Patrick Smyth <patricksmyth01>
+;; Keywords: 
