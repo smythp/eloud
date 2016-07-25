@@ -43,15 +43,16 @@
 		(apply 'start-process full-args-list)))
     (let* ((string (if (equal string "") " " string))
 	  (default-args `("eloud-speaking" nil ,eloud-espeak-path ,(if (hyphen-start-p string) (concat " " string) string) "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate)))))
-      (progn
-	(if (not no-kill)
-	    (progn
-	      (start-process "kill-espeak" nil "killall" "espeak")
-	      (sleep-for .5)))
-	(if (not (equal string ""))
-	    (speak (if (not args)
-		       default-args
-		     (append default-args args))))))))
+      (if (not (current-idle-time))      
+	  (progn
+	    (if (not no-kill)
+		(progn
+		  (start-process "kill-espeak" nil "killall" "espeak")
+		  (sleep-for .5)))
+	    (if (not (equal string ""))
+		(speak (if (not args)
+			   default-args
+			 (append default-args args)))))))))
 
 
 ;;; Speech functions
