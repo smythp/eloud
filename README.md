@@ -46,7 +46,7 @@ Finally, set the path to espeak by adding this to your .emacs:
     (add-to-list 'load-path "~/eloud/")	
 	(setq eloud-espeak-path "~/eloud/")	
 	
-#### Eloud or Emacspeak?
+## Eloud or Emacspeak?
 
 Use Eloud if:
 

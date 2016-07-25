@@ -152,15 +152,30 @@
       (apply old-func other-args))))
 
 
-(defun eloud-ispell-at-point (&rest r)
-  (let ((word (car (ispell-get-word nil)))
-	(old-func (car r))
-	(other-args (cdr r)))
+(defun eloud-ispell-command-loop (&rest r)
+  (let ((old-func (car r))
+	(correction-list (car (cdr r)))
+	(other-args (cdr r))
+	(word-item-num 0)
+	(word (cadddr r))
+	(list-to-read '()))
     (progn
-      (eloud-speak word)
-      (apply old-func other-args))))
-;      (eloud-speak (concat word (substring-no-properties (buffer-string)))))))
-
+      ;; (print (car correction-list)))))
+      (while correction-list
+	(progn
+	  (push (number-to-string word-item-num) list-to-read)
+	  (push ". " list-to-read)
+	  (push (pop correction-list) list-to-read)
+	  (push ". . . " list-to-read)	  
+	  ;; (setq correction-list (cdr correction-list))
+	  (setq word-item-num (1+ word-item-num))))
+      (progn       
+	(setq list-to-read (concat word " . " (apply 'concat (reverse list-to-read))))
+	(eloud-speak list-to-read)
+	(let ((output (apply old-func other-args)))
+	  (progn
+	    (eloud-speak output)
+	    output))))))
 
 
 (defun eloud-character-at-point (&rest r)
@@ -292,7 +307,7 @@
 ;;; Map speech functions to Emacs commands
 
 
-(defvar around-map '((ispell-word . eloud-ispell-at-point)
+(defvar around-map '((ispell-command-loop . eloud-ispell-command-loop)
 		     (move-beginning-of-line . eloud-rest-of-line)
 		     (org-beginning-of-line . eloud-rest-of-line)
 		     (beginning-of-buffer . eloud-whole-buffer)
@@ -386,3 +401,4 @@
 (add-hook 'eloud-mode-hook 'eloud-toggle)
 
 (provide 'eloud)
+
