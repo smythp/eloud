@@ -143,11 +143,23 @@
   "Read current buffer aloud. Used as advice when switching windows."
   (let ((old-func (car r))
 	(other-args (cdr r)))
-  (if r
-      (apply old-func other-args))
-  (progn
-    (eloud-speak (buffer-name))
-    (buffer-name))))
+    (if (called-interactively-p)
+	(progn
+	  (apply old-func other-args)
+	  (eloud-speak (buffer-name))
+	  (buffer-name))
+      (apply old-func other-args))))
+
+
+(defun eloud-ispell-at-point (&rest r)
+  (let ((word (car (ispell-get-word nil)))
+	(old-func (car r))
+	(other-args (cdr r)))
+    (progn
+      (eloud-speak word)
+      (apply old-func other-args))))
+;      (eloud-speak (concat word (substring-no-properties (buffer-string)))))))
+
 
 
 (defun eloud-character-at-point (&rest r)
@@ -279,7 +291,8 @@
 ;;; Map speech functions to Emacs commands
 
 
-(defvar around-map '((move-beginning-of-line . eloud-rest-of-line)
+(defvar around-map '((ispell-word . eloud-ispell-at-point)
+		     (move-beginning-of-line . eloud-rest-of-line)
 		     (org-beginning-of-line . eloud-rest-of-line)
 		     (beginning-of-buffer . eloud-whole-buffer)
 		     (dabbrev-expand . eloud-dabbrev)
