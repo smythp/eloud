@@ -21,11 +21,11 @@ On OSX, use:
 	
 Or find the compiled version [here](http://espeak.sourceforge.net/download.html)
 
-### 2 .Install the package
+### 2. Install the package
 
 Clone this repo:
 
-	cd ~
+    cd ~
     git clone https://github.com/smythp/eloud.git
 	
 Add the load path to your .emacs:
@@ -35,14 +35,23 @@ Add the load path to your .emacs:
 	
 Finally, set the path to espeak by adding this to your .emacs:
 
-	(setq eloud-espeak-path "~/eloud/")
+For Debian/Ubuntu:
+
+    (setq eloud-espeak-path "~//usr/bin/espeak/"
+
+For OSX:
+
+    (setq eloud-espeak-path "/usr/local/bin/espeak")  ; for OSX
+
+Your espeak may be located elsewhere. In that case, use `which espeak` in the terminal to find where the executable is located.
+
 	
 #### Quick install
 
-	cd ~
+    d ~
     git clone https://github.com/smythp/eloud.git
     (add-to-list 'load-path "~/eloud/")	
-	(setq eloud-espeak-path "~/eloud/")	
+    setq eloud-espeak-path "~/eloud/")	
 
 ### Using Eloud
 
