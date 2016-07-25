@@ -59,7 +59,7 @@
 ;;; Code:
 
 (defcustom eloud-speech-rate 270 "Integer from 1 to 400. Sets speech rate for espeak.")
-(defcustom eloud-espeak-path "/usr/bin/espeak" "Path to espeak.")
+(defcustom eloud-espeak-path "/usr/bin/espeak" "Path to espeak. On OSX, likely to be /usr/local/bin/espeak instead.")
 
 
 (require 'cl)
