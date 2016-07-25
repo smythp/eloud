@@ -18,7 +18,7 @@
 
 
 (defun get-char-at-point (&optional offset return-edge)
-  "Returns string of char at point or optional offset. If optional return-edge is non-nil, returns character at point min or point max if point with offset exceed buffer size, else return an empty string."
+  "Returns string of char at point or optional offset. If optional return-edge is non-nil, returns character at point min or point max if point with offset exceeds buffer size, else return an empty string."
   (let* ((new-point (if offset
 		       (+ (point) offset)
 		     (point)))
@@ -27,9 +27,6 @@
     (string (char-after (cond (past-max-p (1- (point-max)))
     			      (past-min-p (point-min))
     			      (t new-point))))))
-    ;; (cond (past-max-p (print "max"))
-    ;; 	  (past-min-p (print "min"))
-    ;; 	  (t (print "else")))))
 
 
 ;;; Main speech function
@@ -197,7 +194,9 @@
 	(n (cadr r))
 	(other-args (cdr r)))
     (if (= (point) 1)
-	(eloud-speak "Beginning of buffer")
+	(progn
+	  (eloud-speak "Beginning of buffer")
+	  (apply old-func other-args))
       (progn	 
 	(eloud-speak
 	 (get-char-at-point -1)
