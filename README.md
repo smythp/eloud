@@ -48,10 +48,13 @@ Your espeak may be located elsewhere. In that case, use `which espeak` in the te
 	
 #### Quick install
 
-    d ~
+    cd ~
     git clone https://github.com/smythp/eloud.git
+	
+Add to .emacs:
+
     (add-to-list 'load-path "~/eloud/")	
-    setq eloud-espeak-path "~/eloud/")	
+    (setq eloud-espeak-path "~/eloud/")	
 
 ### Using Eloud
 
