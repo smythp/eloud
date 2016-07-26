@@ -27,9 +27,10 @@ Clone this repo:
     cd ~
     git clone https://github.com/smythp/eloud.git
 	
-Add the load path to your .emacs:
+Add the load path to your .emacs and require the code:
 
     (add-to-list 'load-path "~/eloud/")
+    (require 'eloud)
 	
 Finally, set the path to espeak in your .emacs:
 
@@ -51,6 +52,7 @@ Your espeak may be located elsewhere. In that case, use `which espeak` in the te
 Add to .emacs:
 
     (add-to-list 'load-path "~/eloud/")	
+	(require 'eloud)
     (setq eloud-espeak-path "~/eloud/")	
 
 ### Using Eloud
