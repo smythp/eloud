@@ -53,7 +53,7 @@ Add to .emacs:
 
     (add-to-list 'load-path "~/eloud/")	
 	(require 'eloud)
-    (setq eloud-espeak-path "~/eloud/")	
+	(setq eloud-espeak-path "/usr/bin/espeak")
 
 ### Using Eloud
 
