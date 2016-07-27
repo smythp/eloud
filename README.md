@@ -36,7 +36,7 @@ Finally, set the path to espeak in your .emacs:
 
 Debian/Ubuntu:
 
-    (setq eloud-espeak-path "/usr/bin/espeak/"
+    (setq eloud-espeak-path "/usr/bin/espeak"
 
 OSX:
 
