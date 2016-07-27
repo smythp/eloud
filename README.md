@@ -66,14 +66,14 @@ There are still many edge cases and interactions with modes and packages that El
 
 Use Eloud if:
 
-- You want to turn speech on or off
+- You want to turn speech on and off
 - You have low vision or eye strain
-- You have trouble installing Emacspeak but want to try Emacs
+- You have trouble installing Emacspeak but want to try Emacs with speech
 
 Use Emacspeak if:
 
-- You don't need to turn speech on or off
-- You want to handle more edge cases
+- You want speech on all the time
+- You need to handle more edge cases
 - You want to use a speech server other than Espeak
 
 
