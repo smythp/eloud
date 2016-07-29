@@ -1,6 +1,6 @@
 ## Eloud
 
-A lightweight, interactive screen reader for Emacs.
+A lightweight, interactive screen reader for Emacs. View the demo [here](https://www.youtube.com/watch?v=k5BLXMGSTJs).  
 
 ### Overview
 
