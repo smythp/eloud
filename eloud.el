@@ -309,8 +309,9 @@
 	(cmd (this-command-keys))
 	(last-char-cmd (byte-to-string (car (last (string-to-list cmd))))))
     (progn 
-      (funcall old-func n)
-      (let ((word (save-excursion (search-backward " " (line-beginning-position) t 2))))
+
+      (let ((out-char (funcall old-func n))
+	    (word (save-excursion (search-backward " " (line-beginning-position) t 2))))
 	(if (equal cmd " ")
 	    (eloud-speak
 	     (buffer-substring (point) (if word word (line-beginning-position)))))
@@ -318,7 +319,29 @@
 	 (if (> n 1)
 	     (concat (number-to-string n) " times " last-char-cmd)
 	   last-char-cmd)
-	 eloud-speech-rate t "--punct")))))
+	 eloud-speech-rate t "--punct")
+      out-char))))
+
+
+(defun eloud-isearch-insert (&rest r)
+  (let ((old-func (car r))
+	(other-args (cdr r))
+	(char-arg (cadr r)))
+    (progn
+      (eloud-speak (string char-arg))
+      (apply old-func other-args))))
+
+
+(defun eloud-isearch-move (&rest r)
+  (interactive)
+  (let ((old-func (car r))
+	(other-args (cdr r))
+	(direction (cadr r)))
+    (progn
+      (apply old-func other-args)      
+      (cond (isearch-error (eloud-speak isearch-error))
+	    (isearch-success (eloud-speak isearch-string))
+	    (t (eloud-speak "no match"))))))
 
 
 (defun eloud-last-kill-ring (&rest r)
@@ -398,6 +421,8 @@
 		     (backward-sentence . eloud-moved-point)
 		     (read-from-minibuffer . eloud-read-minibuffer-prompt)
 		     (self-insert-command . eloud-last-character)
+		     (isearch-printing-char . eloud-isearch-insert)
+		     (isearch-repeat . eloud-isearch-move)
 		     (minibuffer-complete . eloud-completion)
 		     (backward-delete-char-untabify . eloud-character-before-point))
 		     "Holds a list of cons cells used to map advice onto functions.")
