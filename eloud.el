@@ -178,7 +178,9 @@
     (progn
       (funcall  old-func n)
       (eloud-speak
-       (buffer-substring (point-min) (point-max))))))
+       (if (> (point-max) 120000)             
+	   (buffer-substring (point-min) 120000)
+	 (buffer-substring (point-min) (point-max)))))))
 
 
 (defun eloud-status-info ()
