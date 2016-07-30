@@ -62,9 +62,6 @@
 (defcustom eloud-espeak-path "/usr/bin/espeak" "Path to espeak. On OSX, likely to be /usr/local/bin/espeak instead.")
 
 
-(require 'cl)
-
-
 ;;; Helper functions
 
 (defun hyphen-start-p (string)
@@ -96,8 +93,6 @@
   ;; Defines a function that runs process on list of arguments.
   ;; Defines sensible defaults.
   ;; Run with defaults if no additional args specified in function call, else append additional arguments and run
-  (cl-flet ((speak (full-args-list)
-		(apply 'start-process full-args-list)))
     (let* ((string (if (equal string "") " " string))
 	  (default-args `("eloud-speaking" nil ,eloud-espeak-path ,(if (hyphen-start-p string) (concat " " string) string) "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate)))))
       (if (not (current-idle-time))      
@@ -107,9 +102,9 @@
 		  (start-process "kill-espeak" nil "killall" "espeak")
 		  (sleep-for .5)))
 	    (if (not (equal string ""))
-		(speak (if (not args)
+		(apply #'start-process (if (not args)
 			   default-args
-			 (append default-args args)))))))))
+			 (append default-args args))))))))
 
 
 ;;; Speech functions
