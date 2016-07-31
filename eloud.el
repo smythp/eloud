@@ -27,7 +27,7 @@
 
 ;; 1. Install espeak
 
-;; First, install espeak. On Ubuntu or Debian, use:
+;; First, install espeak.  On Ubuntu or Debian, use:
 
 ;;     sudo apt-get install espeak
 
@@ -64,28 +64,28 @@
 ;;; Code:
 
 
-(defgroup eloud-customize nil "Customization group for the Eloud screen reader package.")
+(defgroup eloud nil "Customization group for the Eloud screen reader package." :group 'multimedia)
 
-(defcustom eloud-speech-rate 270 "Integer from 1 to 400. Sets speech rate for espeak." :group 'eloud-customize)
-(defcustom eloud-espeak-path "/usr/bin/espeak" "Path to espeak. On OSX, likely to be /usr/local/bin/espeak instead." :group 'eloud-customize)
+(defcustom eloud-speech-rate 270 "Integer from 1 to 400. Sets speech rate for espeak." :group 'eloud)
+(defcustom eloud-espeak-path "/usr/bin/espeak" "Path to espeak. On OSX, likely to be /usr/local/bin/espeak instead." :group 'eloud)
 
 
 ;;; Helper functions
 
 (defun eloud-hyphen-start-p (string)
-  "Check if a string starts with a hyphen."
+  "Return t if argument STRING starts with a hyphen."
   (equal (byte-to-string (aref string 0)) "-"))
 
 
 (defun get-buffer-string (buffer)
-  "Return a string with the contents of the current buffer."
+  "Return a string with the contents of BUFFER."
   (save-excursion
     (with-current-buffer buffer
       (buffer-string))))
 
 
 (defun get-char-at-point (&optional offset return-edge)
-  "Returns string of char at point or optional offset. If optional return-edge is non-nil, returns character at point min or point max if point with offset exceeds buffer size, else return an empty string."
+  "Return string of char at point or optional OFFSET.  If optional RETURN-EDGE is non-nil, return character at point min or point max if point with offset exceeds buffer size, else return an empty string."
   (let* ((new-point (if offset
 			(+ (point) offset)
 		      (point)))
@@ -99,7 +99,7 @@
 ;;; Main speech function
 
 (defun eloud-speak (string &optional speed no-kill &rest args)
-  "Take a string and pass it to the espeak asynchronous process. Uses the eloud-speech-rate variable if no optional integer speed is specified. Pass additional arguments to espeak as rest arguments. If kill argument non-nil, running speech processes are killed before starting new speech process."
+  "Pass STRING to the espeak asynchronous process.  Use the eloud-speech-rate variable if no optional integer SPEED is specified.  If NO-KILL argument non-nil, running speech processes are killed before starting new speech process.  Pass additional arguments to espeak as rest ARGS."
   ;; Defines a function that runs process on list of arguments.
   ;; Defines sensible defaults.
   ;; Run with defaults if no additional args specified in function call, else append additional arguments and run
@@ -480,9 +480,7 @@
 
 ;;; Define mode
 
-
-(defun eloud-toggle ()
-  "Toggles eloud on or off. Hooked on eloud-mode toggle. Use eloud-mode to turn eloud on or off."
+(define-minor-mode eloud-mode "Minor mode for reading text aloud." nil " eloud" :global t
   (if eloud-mode
       (progn
         (map-commands-to-speech-functions eloud-around-map :around)
@@ -494,13 +492,7 @@
       (eloud-speak "eloud off"))))
 
 
-(define-minor-mode eloud-mode "Minor mode for reading text aloud." nil " eloud" :global t)
-
-(add-hook 'eloud-mode-hook 'eloud-toggle)
-
 (provide 'eloud)
-
-
 
 
 ;;; eloud.el ends here
