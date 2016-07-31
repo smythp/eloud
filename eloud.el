@@ -1,10 +1,12 @@
-;;; eloud.el --- A lightweight, interactive screen reader for Emacs.
+;;; eloud.el --- A lightweight, interactive screen reader
 
 ;; Copyright (C) 2016  Patrick Smyth
 
 ;; Author: Patrick Smyth <patricksmyth01@gmail.com>
 ;; Homepage: https://github.com/smythp/eloud
-;; Keywords:extensions
+;; Keywords: extensions
+;; Package-Requires: ((emacs "24.4"))
+
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -21,7 +23,7 @@
 
 ;;; Commentary:
 
-;;; Eloud is a a lightweight screen reader for Emacs.  It uses the espeak speech synthesizer as a backend.
+;;; Eloud is a lightweight, interactive screen reader.  It uses the espeak speech synthesizer as a backend.
 
 ;; Installation
 
@@ -67,8 +69,7 @@
 (defgroup eloud nil "Customization group for the Eloud screen reader package." :group 'multimedia)
 
 (defcustom eloud-speech-rate 270 "Integer from 1 to 400. Sets speech rate for espeak." :group 'eloud)
-
-(defcustom eloud-espeak-path "/usr/bin/espeak" "Path to espeak.  On OSX, likely to be /usr/local/bin/espeak instead." :group 'eloud)
+  On OSX, likely to be /usr/local/bin/espeak instead." :group 'eloud)
 
 
 ;;; Define free variables to avoid compiler errors
