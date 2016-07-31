@@ -72,10 +72,12 @@
 
 (defcustom eloud-speech-rate 270
   "Integer from 1 to 400. Sets speech rate for espeak."
+  :type '(integer)
   :group 'eloud)
 
 (defcustom eloud-espeak-path "/usr/bin/espeak"
-  "Path to espeak. On OSX, likely to be /usr/local/bin/espeak instead."
+  "Path to espeak as string. On OSX, likely to be /usr/local/bin/espeak instead."
+  :type '(string)
   :group 'eloud)
 
 
