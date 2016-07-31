@@ -66,10 +66,17 @@
 ;;; Code:
 
 
-(defgroup eloud nil "Customization group for the Eloud screen reader package." :group 'multimedia)
+(defgroup eloud nil
+  "Customization group for the Eloud screen reader package."
+  :group 'multimedia)
 
-(defcustom eloud-speech-rate 270 "Integer from 1 to 400. Sets speech rate for espeak." :group 'eloud)
-  On OSX, likely to be /usr/local/bin/espeak instead." :group 'eloud)
+(defcustom eloud-speech-rate 270
+  "Integer from 1 to 400. Sets speech rate for espeak."
+  :group 'eloud)
+
+(defcustom eloud-espeak-path "/usr/bin/espeak"
+  "Path to espeak. On OSX, likely to be /usr/local/bin/espeak instead."
+  :group 'eloud)
 
 
 ;;; Define free variables to avoid compiler errors
