@@ -67,13 +67,18 @@
 (defgroup eloud nil "Customization group for the Eloud screen reader package." :group 'multimedia)
 
 (defcustom eloud-speech-rate 270 "Integer from 1 to 400. Sets speech rate for espeak." :group 'eloud)
-(defcustom eloud-espeak-path "/usr/bin/espeak" "Path to espeak. On OSX, likely to be /usr/local/bin/espeak instead." :group 'eloud)
+(defcustom eloud-espeak-path "/usr/bin/espeak" "Path to espeak.  On OSX, likely to be /usr/local/bin/espeak instead." :group 'eloud)
+
+
+;;; Define free variables to avoid compiler errors
+
+(defvar dabbrev--last-expansion)
 
 
 ;;; Helper functions
 
 (defun eloud-hyphen-start-p (string)
-  "Return t if argument STRING starts with a hyphen."
+  "Test if first character of STRING is a hyphen."
   (equal (byte-to-string (aref string 0)) "-"))
 
 
@@ -121,7 +126,7 @@
 
 
 (defun eloud-rest-of-line (&rest r)
-  "Read from point to the rest of the line. Used as advice."
+  "Read from point to the rest of the line.  Used as advice.  Call original function with args R."
   (interactive "^p")
   (let ((move-number (cadr r))
         (old-func (car r))
@@ -134,7 +139,7 @@
 
 
 (defun eloud-dabbrev (&rest r)
-  "Advice for reading expanded dabbrev."
+  "Advice for reading expanded dabbrev.  Call original function with args R."
   (interactive "*P")
   (let ((old-func (car r))
         (additional-args (cdr r))
@@ -144,7 +149,7 @@
 
 
 (defun eloud-rest-of-line-delay (&rest r)
-  "Wordaround for moving to beginning of line while reading."
+  "Advice for reading remainder of line.  Call original function with arguments R.  Incorporates delay as workaround for moving to beginning of line while reading."
   (interactive "^p")
   (let ((move-number (cadr r))
         (old-func (car r))
@@ -158,7 +163,7 @@
 
 
 (defun eloud-kill-line (&rest r)
-  "Read killed text when using kil-line. Read only last line killed, not last item in killring."
+  "Advice to read killed text when using kil-line.  Call original function with args R.  Read only last line killed, not last item in killring."
   (interactive "P")
   (let ((move-number (if (cadr r) (cadr r) 0))
         (old-func (car r))
@@ -176,7 +181,7 @@
 
 
 (defun eloud-whole-buffer (&rest r)
-  "Speak whole buffer. Used as advice."
+  "Advice to speak whole buffer.  Call original function with args R."
   (interactive "^P")
   (let ((old-func (car r))
         (n (cadr r)))
@@ -196,7 +201,7 @@
 
 
 (defun eloud-current-buffer (&rest r)
-  "Read current buffer aloud. Used as advice when switching windows."
+  "Advice to read current buffer name aloud.  Call original function with args R."
   (interactive "^p")
   (let ((old-func (car r))
         (other-args (cdr r)))
@@ -208,10 +213,10 @@
 
 
 (defun eloud-switch-to-buffer (&rest r)
-  "Read current buffer aloud after switch. Used as advice when switching windows."
+  "Advice to read current buffer aloud after switch.  Call original function with args R."
   (let ((old-func (car r))
         (other-args (cdr r)))
-    (if (called-interactively-p)
+    (if (called-interactively-p 'any)
         (progn
           (apply old-func other-args)
           (eloud-speak (buffer-name))
@@ -220,12 +225,12 @@
 
 
 (defun eloud-ispell-command-loop (&rest r)
-  "When used as advice on ispell-command-loop, reads the word being corrected along and then reads each possible correction in turn."
+  "Advice to read the word being corrected during Ispell.  Call original function with args R."
   (let ((old-func (car r))
         (correction-list (car (cdr r)))
         (other-args (cdr r))
         (word-item-num 0)
-        (word (cadddr r))
+        (word (car (cdr (cdr (cdr r)))))
         (list-to-read '()))
     (progn
       ;; (print (car correction-list)))))
@@ -247,7 +252,7 @@
 
 
 (defun eloud-character-at-point (&rest r)
-  "Read aloud the character at point."
+  "Advice to read aloud the character at point.  Call original function with args R."
   (interactive "^p")
   (let ((old-func (car r))
         (n (cadr r)))
@@ -259,7 +264,7 @@
 
 
 (defun eloud-character-before-point (&rest r)
-  "Read aloud the character before point."
+  "Advice to read aloud the character before point.  Call original function with args R."
   (interactive "^p")
   (let ((old-func (car r))
         (n (cadr r))
@@ -276,12 +281,12 @@
 
 
 (defun eloud-character-after-point (&rest r)
-  "Read aloud the character after point."
+  "Advice to read aloud the character after point.  Call original function with args R."
   (interactive "^p")
   (let ((old-func (car r))
         (n (cadr r))
         (other-args (cdr r)))
-    (if (called-interactively-p)
+    (if (called-interactively-p 'any)
         (if (= (point) (point-max))
             (progn
               (eloud-speak "end of buffer")
@@ -295,7 +300,7 @@
 
 
 (defun eloud-delete-forward (&rest r)
-  "Read aloud the character after point."
+  "Advice to read aloud the character after point.  Call original function with args R."
   (interactive "^p")
   (let ((old-func (car r))
         (n (cadr r)))
@@ -309,6 +314,7 @@
 
 
 (defun eloud-last-character (&rest r)
+  "Advice to read last printed character.  Call original function with args R."
   (interactive "^p")
   (let* ((old-func (car r))
 	 (n (cadr r))
@@ -331,6 +337,7 @@
 
 
 (defun eloud-isearch-insert (&rest r)
+  "Advice to read characters inserted into the minibuffer during isearch.  Call original function with args R."
   (let ((old-func (car r))
         (other-args (cdr r))
         (char-arg (cadr r)))
@@ -340,6 +347,7 @@
 
 
 (defun eloud-isearch-move (&rest r)
+  "Advice to read aloud search word during isearch.  If no additional match in buffer, read \"no match\" aloud.  Call original function with args R."
   (interactive)
   (let ((old-func (car r))
         (other-args (cdr r))
@@ -352,7 +360,7 @@
 
 
 (defun eloud-last-kill-ring (&rest r)
-  "Read last item on killring aloud. To be used as advice."
+  "Advice to read last item on killring aloud.  Call original function with args R."
   (interactive "^p")
   (let* ((old-func (car r))
          (n (cadr r))
@@ -363,7 +371,7 @@
 
 
 (defun eloud-moved-point (&rest r)
-  "After point is moved, read the difference between new point and old point. Used to advise functions."
+  "Advice to read difference between point before calling original function and point after calling original function.  Original function called with args R."
   (interactive "^p")
   (let ((move-number (cadr r))
         (old-func (car r))
@@ -377,7 +385,7 @@
 
 
 (defun eloud-evaluation (&rest r)
-  "Rads the output of an interactive command aloud when used as advice."
+  "Advice to read the output of an interactive command aloud.  Call original command with args R."
   (interactive "P")
   (let* ((old-func (car r))
 	 (n (cadr r))
@@ -387,7 +395,7 @@
 
 
 (defun eloud-completion (&rest r)
-  "When used as advice on minibuffer-complete, reads completion."
+  "Advice to read completion in minibuffer.  Call original completion function with args R."
   (let* ((old-func (car r))
          (other-args (cdr r))
          (initial-point (point)))
@@ -443,7 +451,7 @@
 
 
 (defun map-commands-to-speech-functions (advice-map advice-type &optional unmap)
-  "Takes list of cons cells mapping movement commands to eloud speech functions. See variable eloud-around-map for example. If optional unmap parameter is t, removes all bound advice functions instead."
+  "Map native Emacs functions to Eloud advice defined as list of cons cells in ADVICE-MAP.  ADVICE-TYPE determines whether advice is :around, :override, :after, etc., in the form of a keyword symbol.  If optional UNMAP parameter is non-nil, remove all bound advice functions instead."
   (mapcar (lambda (x)
             (let ((target-function (car x))
                   (speech-function (cdr x)))
@@ -454,7 +462,7 @@
 
 
 (defun map-commands-to-hooks (hook-map &optional unmap)
-  "Map speech functions to hooks. If unmap is non-nil, removes the added functions."
+  "Map speech functions to hooks as defined in list of cons cells HOOK-MAP.  If UNMAP is non-nil, remove the added functions."
   (mapcar (lambda (x)
             (progn
               (if (not (boundp (car x)))
@@ -468,6 +476,7 @@
 
 
 (defun eloud-read-minibuffer-prompt (&rest r)
+  "Advice to read the current prompt in the minibuffer.  Call original function with args R."
   (let* ((old-func (car r))
 	 (prompt (cadr r))
 	 (args (cdr r)))
@@ -500,4 +509,3 @@
 ;; Copyright (C) 2016  Patrick Smyth
 
 ;; Author: Patrick Smyth <patricksmyth01>
-;; Keywords:
