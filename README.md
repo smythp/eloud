@@ -6,6 +6,19 @@ A lightweight, interactive screen reader for Emacs. View the demo [here](https:/
 
 Eloud works on Linux and OSX versions of Emacs and uses the espeak speech synthesizer as the backend. It's designed to respond to user input, so if you move a word, character, or sentence, Eloud will read that segment as you move. 
 
+### MELPA install
+
+After installing Eloud from `package-list-packages`, add this line to your .emacs:
+
+    (require 'eloud)
+	
+If you don't hear a voice after calling `M-x eloud-mode`, you need to manually set the path to the Espeak speech server.
+
+    (setq eloud-espeak-path "/usr/local/bin/espeak")
+	
+See below for instructions on installing Espeak.
+
+
 ### Manual install
 
 #### 1. Install espeak 
