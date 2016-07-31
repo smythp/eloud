@@ -58,7 +58,7 @@
 ;;     cd ~
 ;;     git clone https://github.com/smythp/eloud.git
 ;;     (add-to-list 'load-path "~/eloud/")
-;;     (setq eloud-espeak-path "~/eloud/")
+;;     (setq eloud-espeak-path "/usr/bin/espeak")
 
 
 
