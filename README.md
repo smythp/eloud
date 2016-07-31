@@ -12,7 +12,7 @@ After installing Eloud from `package-list-packages`, add this line to your .emac
 
     (require 'eloud)
 	
-If you don't hear a voice after calling `M-x eloud-mode`, you need to manually set the path to the Espeak speech server.
+If you don't hear a voice after calling `M-x eloud-mode`, you need to manually set the path to the Espeak speech synthesizer.
 
     (setq eloud-espeak-path "/usr/local/bin/espeak")
 	
