@@ -67,6 +67,7 @@
 (defgroup eloud nil "Customization group for the Eloud screen reader package." :group 'multimedia)
 
 (defcustom eloud-speech-rate 270 "Integer from 1 to 400. Sets speech rate for espeak." :group 'eloud)
+
 (defcustom eloud-espeak-path "/usr/bin/espeak" "Path to espeak.  On OSX, likely to be /usr/local/bin/espeak instead." :group 'eloud)
 
 
@@ -82,14 +83,14 @@
   (equal (byte-to-string (aref string 0)) "-"))
 
 
-(defun get-buffer-string (buffer)
+(defun eloud-get-buffer-string (buffer)
   "Return a string with the contents of BUFFER."
   (save-excursion
     (with-current-buffer buffer
       (buffer-string))))
 
 
-(defun get-char-at-point (&optional offset return-edge)
+(defun eloud-get-char-at-point (&optional offset return-edge)
   "Return string of char at point or optional OFFSET.  If optional RETURN-EDGE is non-nil, return character at point min or point max if point with offset exceeds buffer size, else return an empty string."
   (let* ((new-point (if offset
 			(+ (point) offset)
@@ -104,7 +105,7 @@
 ;;; Main speech function
 
 (defun eloud-speak (string &optional speed no-kill &rest args)
-  "Pass STRING to the espeak asynchronous process.  Use the eloud-speech-rate variable if no optional integer SPEED is specified.  If NO-KILL argument non-nil, running speech processes are killed before starting new speech process.  Pass additional arguments to espeak as rest ARGS."
+  "Pass STRING to the espeak asynchronous process.  Use the `eloud-speech-rate' variable if no optional integer SPEED is specified.  If NO-KILL argument non-nil, running speech processes are killed before starting new speech process.  Pass additional arguments to espeak as rest ARGS."
   ;; Defines a function that runs process on list of arguments.
   ;; Defines sensible defaults.
   ;; Run with defaults if no additional args specified in function call, else append additional arguments and run
@@ -275,7 +276,7 @@
           (apply old-func other-args))
       (progn
         (eloud-speak
-         (get-char-at-point -1)
+         (eloud-get-char-at-point -1)
          nil t "--punct")
         (apply old-func other-args)))))
 
@@ -293,7 +294,7 @@
               (apply old-func other-args))
           (progn
             (eloud-speak
-             (get-char-at-point)
+             (eloud-get-char-at-point)
              nil t "--punct")
             (apply old-func other-args))))
     (apply old-func other-args)))
@@ -308,7 +309,7 @@
         (eloud-speak "end of buffer")
       (progn
         (eloud-speak
-         (get-char-at-point)
+         (eloud-get-char-at-point)
          nil t "--punct")
         (funcall old-func n)))))
 
@@ -402,7 +403,7 @@
     (if (apply old-func other-args)
         (if (equal initial-point (point))
             (eloud-speak
-             (substring-no-properties (get-buffer-string "*Completions*") 96))
+             (substring-no-properties (eloud-get-buffer-string "*Completions*") 96))
           (eloud-speak (current-word))))))
 
 
@@ -446,11 +447,11 @@
 ;;; add functions to hooks
 
 
-(defvar hook-map '((gnus-summary-prepared-hook . (lambda () (progn (sit-for .3) (eloud-rest-of-line (lambda () nil))))))
+(defvar eloud-hook-map '((gnus-summary-prepared-hook . (lambda () (progn (sit-for .3) (eloud-rest-of-line (lambda () nil))))))
   "List of concs cells to map functions onto hooks when Eloud is initialized.")
 
 
-(defun map-commands-to-speech-functions (advice-map advice-type &optional unmap)
+(defun eloud-map-commands-to-speech-functions (advice-map advice-type &optional unmap)
   "Map native Emacs functions to Eloud advice defined as list of cons cells in ADVICE-MAP.  ADVICE-TYPE determines whether advice is :around, :override, :after, etc., in the form of a keyword symbol.  If optional UNMAP parameter is non-nil, remove all bound advice functions instead."
   (mapcar (lambda (x)
             (let ((target-function (car x))
@@ -461,7 +462,7 @@
           advice-map))
 
 
-(defun map-commands-to-hooks (hook-map &optional unmap)
+(defun eloud-map-commands-to-hooks (hook-map &optional unmap)
   "Map speech functions to hooks as defined in list of cons cells HOOK-MAP.  If UNMAP is non-nil, remove the added functions."
   (mapcar (lambda (x)
             (progn
@@ -492,12 +493,12 @@
 (define-minor-mode eloud-mode "Minor mode for reading text aloud." nil " eloud" :global t
   (if eloud-mode
       (progn
-        (map-commands-to-speech-functions eloud-around-map :around)
-        (map-commands-to-hooks hook-map)
+        (eloud-map-commands-to-speech-functions eloud-around-map :around)
+        (eloud-map-commands-to-hooks eloud-hook-map)
         (eloud-speak "eloud on"))
     (progn
-      (map-commands-to-speech-functions eloud-around-map nil t)
-      (map-commands-to-hooks hook-map t)
+      (eloud-map-commands-to-speech-functions eloud-around-map nil t)
+      (eloud-map-commands-to-hooks eloud-hook-map t)
       (eloud-speak "eloud off"))))
 
 
