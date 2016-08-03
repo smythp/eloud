@@ -77,6 +77,11 @@
     (eloud-speak (buffer-substring (point-min) 120000))))
 
 
+(defun eloud-speak-buffer-name ()
+  "Read aloud current buffer name unless last buffer was the minibuffer."
+  (eloud-speak (buffer-name)))
+
+
 (defun eloud-map-hooks (hook-map &optional unmap)
 
   (mapcar (lambda (x)
@@ -86,12 +91,10 @@
 		  (add-hook hook function-to-bind)
 		(remove-hook hook function-to-bind))))
 	  hook-map))
-  
+
 
 (defvar eloud-hook-map '((minibuffer-setup-hook . eloud-speak-buffer)))
-
-
-
+		       
 
 
 (define-minor-mode eloud-mode "Minor mode for reading text aloud." nil " eloud" :global t
