@@ -133,7 +133,28 @@
 				       (append default-args args))))))))
 
 
+
+;;; Hook functions
+
+
+(defun eloud-speak-buffer ()
+  "Read current buffer aloud."
+  (if (< (point-max) 120000)
+      (eloud-speak (buffer-string))
+    (eloud-speak (buffer-substring (point-min) 120000))))
+
+
+(defvar eloud-hook-map '((minibuffer-setup-hook . eloud-speak-buffer)))
+
+
+
+  
+(add-hook 'minibuffer-setup-hook '(lambda () (eloud-speak (buffer-string))))
+
 ;;; Speech functions
+
+
+
 
 
 (defun eloud-rest-of-line (&rest r)
@@ -457,8 +478,8 @@
 ;;; add functions to hooks
 
 
-(defvar eloud-hook-map '((gnus-summary-prepared-hook . (lambda () (progn (sit-for .3) (eloud-rest-of-line (lambda () nil))))))
-  "List of concs cells to map functions onto hooks when Eloud is initialized.")
+;; (defvar eloud-hook-map '((gnus-summary-prepared-hook . (lambda () (progn (sit-for .3) (eloud-rest-of-line (lambda () nil))))))
+;;   "List of concs cells to map functions onto hooks when Eloud is initialized.;; ")
 
 
 (defun eloud-map-commands-to-speech-functions (advice-map advice-type &optional unmap)
@@ -472,18 +493,36 @@
           advice-map))
 
 
-(defun eloud-map-commands-to-hooks (hook-map &optional unmap)
-  "Map speech functions to hooks as defined in list of cons cells HOOK-MAP.  If UNMAP is non-nil, remove the added functions."
-  (mapcar (lambda (x)
-            (progn
-              (if (not (boundp (car x)))
-                  (set (car x)  nil))
-              (let ((hook-variable (car x))
-                    (function-to-add (cdr x)))
-                (if (not unmap)
-                    (push function-to-add (symbol-value hook-variable))
-                  (set hook-variable (remove function-to-add (symbol-value hook-variable)))))))
-          hook-map))
+;; (defun eloud-map-commands-to-hooks (hook-map &optional unmap)
+;;   "Map speech functions to hooks as defined in list of cons cells HOOK-MAP.  If UNMAP is non-nil, remove the added functions."
+;;   (mapcar (lambda (x)
+;;             (progn
+;;               (if (not (boundp (car x)))
+;;                   (set (car x)  nil))
+;;               (let ((hook-variable (car x))
+;;                     (function-to-add (cdr x)))
+;;                 (if (not unmap)
+;;                     (push function-to-add (symbol-value hook-variable))
+;;                   (set hook-variable (remove function-to-add (symbol-value hook-variable)))))))
+;;           hook-map))
+
+
+(defun eloud-map-hooks (hook-map &optional unmap)
+      (mapcar (lambda (x)
+		(let ((hook (car x))
+		      (function-to-bind (cadr x)))
+		  (princ hook)))
+	      hook-map))
+	      ;; 	  (if (not unmap)		  
+	      ;; 	      (add-hook hook function-to-bind)
+	      ;; 	    (remove-hook hook function-to-bind))))
+	      ;; hook-map))
+
+(eloud-map-hooks eloud-hook-map)
+
+			    
+  
+
 
 
 (defun eloud-read-minibuffer-prompt (&rest r)
@@ -503,8 +542,9 @@
 (define-minor-mode eloud-mode "Minor mode for reading text aloud." nil " eloud" :global t
   (if eloud-mode
       (progn
-        (eloud-map-commands-to-speech-functions eloud-around-map :around)
-        (eloud-map-commands-to-hooks eloud-hook-map)
+;;        (eloud-map-commands-to-speech-functions eloud-around-map :around)
+	;;        (eloud-map-commands-to-hooks eloud-hook-map)
+	
         (eloud-speak "eloud on"))
     (progn
       (eloud-map-commands-to-speech-functions eloud-around-map nil t)
