@@ -158,7 +158,6 @@
     
 
 
-
 (defvar eloud-hook-map '((minibuffer-setup-hook . eloud-speak-buffer)))
 
 (setq eloud-post-command-hook-map '((next-line . (eloud-rest-of-line))
@@ -168,8 +167,10 @@
 (defun eloud-conditional-hook (hook-map &optional unmap)
   (let ((called-function (car (cdr (assoc this-command hook-map))))
 	(args (cdr (cdr (assoc this-command hook-map)))))
-     (cond ((and called-function args) (apply eloud-function args))
+    (cond ((and called-function args) (apply called-function args))
 	  (called-function (funcall called-function)))))
+
+
 
 
 (defun eloud-post-command-hook ()
@@ -190,18 +191,6 @@
 ;;; Speech functions
 
 
-(defun eloud-rest-of-line (&rest r)
-  "Read from point to the rest of the line.  Used as advice.  Call original function with args R."
-  (interactive "^p")
-  (let ((move-number (cadr r))
-        (old-func (car r))
-        (additional-args (cdr r)))
-    (progn
-      (apply old-func additional-args)
-      (let ((point-to-end-of-line (buffer-substring (point) (line-end-position))))
-        (if (not (equal point-to-end-of-line ""))
-            (eloud-speak point-to-end-of-line))))))
-
 
 (defun eloud-dabbrev (&rest r)
   "Advice for reading expanded dabbrev.  Call original function with args R."
@@ -211,38 +200,6 @@
         (initial-point (point)))
     (apply old-func additional-args)
     (eloud-speak dabbrev--last-expansion)))
-
-
-(defun eloud-rest-of-line-delay (&rest r)
-  "Advice for reading remainder of line.  Call original function with arguments R.  Incorporates delay as workaround for moving to beginning of line while reading."
-  (interactive "^p")
-  (let ((move-number (cadr r))
-        (old-func (car r))
-        (additional-args (cdr r)))
-    (progn
-      (apply old-func additional-args)
-      (sit-for .5)
-      (let ((point-to-end-of-line (buffer-substring (point) (line-end-position))))
-        (if (not (equal point-to-end-of-line ""))
-            (eloud-speak point-to-end-of-line))))))
-
-
-(defun eloud-kill-line (&rest r)
-  "Advice to read killed text when using kil-line.  Call original function with args R.  Read only last line killed, not last item in killring."
-  (interactive "P")
-  (let ((move-number (if (cadr r) (cadr r) 0))
-        (old-func (car r))
-        (blank-line-p (equal (- (point) (line-end-position)) 0))
-        (additional-args (cdr r)))
-    (if (> move-number 1)
-        (progn
-          (apply old-func additional-args)
-          (eloud-speak (car kill-ring)))
-      (progn
-        (let ((rest-of-line (buffer-substring (point) (line-end-position))))
-          (if (not (equal rest-of-line ""))
-              (eloud-speak (buffer-substring (point) (line-end-position))))
-          (apply old-func additional-args))))))
 
 
 (defun eloud-whole-buffer (&rest r)
@@ -474,38 +431,6 @@
 ;;; Map speech functions to Emacs commands
 
 
-(defvar eloud-around-map '((ispell-command-loop . eloud-ispell-command-loop)
-			   (move-beginning-of-line . eloud-rest-of-line)
-			   (org-beginning-of-line . eloud-rest-of-line)
-			   (beginning-of-buffer . eloud-whole-buffer)
-			   (dabbrev-expand . eloud-dabbrev)
-			   (dired-next-line . eloud-rest-of-line)
-			   (forward-char . eloud-character-at-point)
-			   (backward-char . eloud-character-at-point)
-			   (dired-previous-line . eloud-rest-of-line)
-			   (next-line . eloud-rest-of-line)
-			   (previous-line . eloud-rest-of-line)
-			   (other-window . eloud-current-buffer)
-			   (switch-to-buffer . eloud-switch-to-buffer)
-			   (kill-word . eloud-last-kill-ring)
-			   (backward-kill-word . eloud-last-kill-ring)
-			   (kill-line . eloud-kill-line)
-			   (forward-button . eloud-moved-point)
-			   (backward-button . eloud-moved-point)
-			   (backward-word . eloud-moved-point)
-			   (forward-word . eloud-moved-point)
-			   (forward-sentence . eloud-moved-point)
-			   (eval-last-sexp . eloud-evaluation)
-			   (delete-forward-char . eloud-character-after-point)
-			   (delete-char . eloud-character-after-point)
-			   (backward-sentence . eloud-moved-point)
-			   (read-from-minibuffer . eloud-read-minibuffer-prompt)
-			   (self-insert-command . eloud-last-character)
-			   (isearch-printing-char . eloud-isearch-insert)
-			   (isearch-repeat . eloud-isearch-move)
-			   (minibuffer-complete . eloud-completion)
-			   (backward-delete-char-untabify . eloud-character-before-point))
-  "Holds a list of cons cells used to map advice onto functions.")
 
 
 ;;; add functions to hooks
@@ -513,13 +438,13 @@
 
 
 (defun eloud-map-hooks (hook-map &optional unmap)
-  (let ((hook (car x))
-	(function-to-bind (cdr x)))
-    (mapcar (lambda (x)
+  (mapcar (lambda (x)
+	    (let ((hook (car x))
+		  (function-to-bind (cdr x)))
 	      (if (not unmap)
 		  (add-hook hook function-to-bind)
-		(remove-hook hook function-to-bind)))
-	      hook-map)))
+		(remove-hook hook function-to-bind))))
+	    hook-map))
 
 
 (defun eloud-read-minibuffer-prompt (&rest r)
@@ -544,8 +469,9 @@
 	(eloud-map-hooks eloud-hook-map)
         (eloud-speak "eloud on"))
     (progn
-      (eloud-map-commands-to-speech-functions eloud-around-map nil t)
-      (eloud-map-commands-to-hooks eloud-hook-map t)
+      (remove-hook 'post-command-hook 'eloud-post-command-hook)
+      (remove-hook 'pre-command-hook 'eloud-save-point)      
+      (eloud-map-hooks eloud-hook-map t)
       (eloud-speak "eloud off"))))
 
 
