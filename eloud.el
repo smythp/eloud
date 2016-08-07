@@ -144,12 +144,40 @@
     (eloud-speak (buffer-substring (point-min) 120000))))
 
 
+(defun eloud-rest-of-line ()
+  (eloud-speak
+   (buffer-substring (point) (line-end-position))))
+    
+
 (defvar eloud-hook-map '((minibuffer-setup-hook . eloud-speak-buffer)))
 
+(setq eloud-post-command-hook-map '((next-line . (eloud-rest-of-line))
+				    (previous-line . (eloud-rest-of-line))))
 
 
-  
-(add-hook 'minibuffer-setup-hook '(lambda () (eloud-speak (buffer-string))))
+(defun eloud-conditional-hook (hook-map &optional unmap)
+  (let ((called-function (car (cdr (assoc this-command hook-map))))
+	(args (cdr (cdr (assoc this-command hook-map)))))
+     (cond ((and called-function args) (apply eloud-function args))
+	  (called-function (funcall called-function)))))
+
+
+
+(defun eloud-post-command-hook ()
+  (eloud-conditional-hook eloud-post-command-hook-map))
+
+(add-hook 'post-command-hook 'eloud-post-command-hook)
+(remove-hook 'post-command-hook 'eloud-post-command-hook)
+
+
+
+
+
+  ;; (mapcar (lambda (x)
+  ;; 	    (add-hook (car x) (cdr x)))
+  ;; 	  hook-map))
+
+(eloud-map-post-command-hooks eloud-post-command-hook-map)
 
 ;;; Speech functions
 
