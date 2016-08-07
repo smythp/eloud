@@ -86,6 +86,11 @@
 (defvar dabbrev--last-expansion)
 
 
+;;; Define functions used internally
+
+(defvar eloud-pre-command-point)
+
+
 ;;; Helper functions
 
 (defun eloud-hyphen-start-p (string)
@@ -133,6 +138,9 @@
 				       (append default-args args))))))))
 
 
+(defun eloud-save-point ()
+  (setq eloud-pre-command-point (point)))
+
 
 ;;; Hook functions
 
@@ -149,6 +157,8 @@
    (buffer-substring (point) (line-end-position))))
     
 
+
+
 (defvar eloud-hook-map '((minibuffer-setup-hook . eloud-speak-buffer)))
 
 (setq eloud-post-command-hook-map '((next-line . (eloud-rest-of-line))
@@ -160,7 +170,6 @@
 	(args (cdr (cdr (assoc this-command hook-map)))))
      (cond ((and called-function args) (apply eloud-function args))
 	  (called-function (funcall called-function)))))
-
 
 
 (defun eloud-post-command-hook ()
@@ -177,12 +186,8 @@
   ;; 	    (add-hook (car x) (cdr x)))
   ;; 	  hook-map))
 
-(eloud-map-post-command-hooks eloud-post-command-hook-map)
 
 ;;; Speech functions
-
-
-
 
 
 (defun eloud-rest-of-line (&rest r)
@@ -506,51 +511,15 @@
 ;;; add functions to hooks
 
 
-;; (defvar eloud-hook-map '((gnus-summary-prepared-hook . (lambda () (progn (sit-for .3) (eloud-rest-of-line (lambda () nil))))))
-;;   "List of concs cells to map functions onto hooks when Eloud is initialized.;; ")
-
-
-(defun eloud-map-commands-to-speech-functions (advice-map advice-type &optional unmap)
-  "Map native Emacs functions to Eloud advice defined as list of cons cells in ADVICE-MAP.  ADVICE-TYPE determines whether advice is :around, :override, :after, etc., in the form of a keyword symbol.  If optional UNMAP parameter is non-nil, remove all bound advice functions instead."
-  (mapcar (lambda (x)
-            (let ((target-function (car x))
-                  (speech-function (cdr x)))
-              (if (not unmap)
-                  (advice-add target-function advice-type speech-function)
-                (advice-remove target-function speech-function))))
-          advice-map))
-
-
-;; (defun eloud-map-commands-to-hooks (hook-map &optional unmap)
-;;   "Map speech functions to hooks as defined in list of cons cells HOOK-MAP.  If UNMAP is non-nil, remove the added functions."
-;;   (mapcar (lambda (x)
-;;             (progn
-;;               (if (not (boundp (car x)))
-;;                   (set (car x)  nil))
-;;               (let ((hook-variable (car x))
-;;                     (function-to-add (cdr x)))
-;;                 (if (not unmap)
-;;                     (push function-to-add (symbol-value hook-variable))
-;;                   (set hook-variable (remove function-to-add (symbol-value hook-variable)))))))
-;;           hook-map))
-
 
 (defun eloud-map-hooks (hook-map &optional unmap)
-      (mapcar (lambda (x)
-		(let ((hook (car x))
-		      (function-to-bind (cadr x)))
-		  (princ hook)))
-	      hook-map))
-	      ;; 	  (if (not unmap)		  
-	      ;; 	      (add-hook hook function-to-bind)
-	      ;; 	    (remove-hook hook function-to-bind))))
-	      ;; hook-map))
-
-(eloud-map-hooks eloud-hook-map)
-
-			    
-  
-
+  (let ((hook (car x))
+	(function-to-bind (cdr x)))
+    (mapcar (lambda (x)
+	      (if (not unmap)
+		  (add-hook hook function-to-bind)
+		(remove-hook hook function-to-bind)))
+	      hook-map)))
 
 
 (defun eloud-read-minibuffer-prompt (&rest r)
@@ -570,9 +539,9 @@
 (define-minor-mode eloud-mode "Minor mode for reading text aloud." nil " eloud" :global t
   (if eloud-mode
       (progn
-;;        (eloud-map-commands-to-speech-functions eloud-around-map :around)
-	;;        (eloud-map-commands-to-hooks eloud-hook-map)
-	
+	(add-hook 'post-command-hook 'eloud-post-command-hook)
+	(add-hook 'pre-command-hook 'eloud-save-point)
+	(eloud-map-hooks eloud-hook-map)
         (eloud-speak "eloud on"))
     (progn
       (eloud-map-commands-to-speech-functions eloud-around-map nil t)
