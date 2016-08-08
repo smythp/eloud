@@ -177,16 +177,23 @@
 				    (forward-word . (eloud-speak-after-move))
 				    (backward-word . (eloud-speak-after-move))
 				    (forward-char . (eloud-speak-point))
-				    (backward-char . (eloud-speak-point))))
+				    (backward-char . (eloud-speak-point))
+				    (move-beginning-of-line . (eloud-rest-of-line))
+				    (self-insert-command . (eloud-speak-point -1))
+				    (kill-word . (eloud-last-kill-ring))
+				    (backward-kill-word . (eloud-last-kill-ring))))
 
 
-(setq eloud-pre-command-hook-map '((backward-delete-char-untabify . (eloud-speak-point -1))))
+
+(setq eloud-pre-command-hook-map '((backward-delete-char-untabify . (eloud-speak-point -1))
+				   (delete-forward-char . (eloud-speak-point))
+				   (delete-char . (eloud-speak-point))))
 
 
 
 (defun eloud-conditional-hook (hook-map &optional unmap)
-  (let ((called-function (car (cdr (assoc this-command hook-map))))
-	(args (cdr (cdr (assoc this-command hook-map)))))
+  (let ((called-function (car (cdr (assoc this-original-command hook-map))))
+	(args (cdr (cdr (assoc this-original-command hook-map)))))
     (cond ((and called-function args) (apply called-function args))
 	  (called-function (funcall called-function)))))
 
@@ -347,28 +354,6 @@
         (funcall old-func n)))))
 
 
-(defun eloud-last-character (&rest r)
-  "Advice to read last printed character.  Call original function with args R."
-  (interactive "^p")
-  (let* ((old-func (car r))
-	 (n (cadr r))
-	 (other-args (cddr r))
-	 (cmd (this-command-keys))
-	 (last-char-cmd (byte-to-string (car (last (string-to-list cmd))))))
-    (progn
-
-      (let ((out-char (funcall old-func n))
-            (word (save-excursion (search-backward " " (line-beginning-position) t 2))))
-        (if (equal cmd " ")
-            (eloud-speak
-             (buffer-substring (point) (if word word (line-beginning-position)))))
-        (eloud-speak
-         (if (> n 1)
-             (concat (number-to-string n) " times " last-char-cmd)
-           last-char-cmd)
-         eloud-speech-rate t "--punct")
-	out-char))))
-
 
 (defun eloud-isearch-insert (&rest r)
   "Advice to read characters inserted into the minibuffer during isearch.  Call original function with args R."
@@ -393,15 +378,8 @@
             (t (eloud-speak "no match"))))))
 
 
-(defun eloud-last-kill-ring (&rest r)
-  "Advice to read last item on killring aloud.  Call original function with args R."
-  (interactive "^p")
-  (let* ((old-func (car r))
-         (n (cadr r))
-         (other-args (cdr r)))
-    (progn
-      (apply old-func other-args)
-      (eloud-speak (car kill-ring)))))
+(defun eloud-last-kill-ring ()
+  (eloud-speak (car kill-ring)))
 
 
 (defun eloud-moved-point (&rest r)
