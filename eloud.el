@@ -180,6 +180,10 @@
 				    (backward-char . (eloud-speak-point))))
 
 
+(setq eloud-pre-command-hook-map '((backward-delete-char-untabify . (eloud-speak-point -1))))
+
+
+
 (defun eloud-conditional-hook (hook-map &optional unmap)
   (let ((called-function (car (cdr (assoc this-command hook-map))))
 	(args (cdr (cdr (assoc this-command hook-map)))))
@@ -192,8 +196,8 @@
 (defun eloud-post-command-hook ()
   (eloud-conditional-hook eloud-post-command-hook-map))
 
-(add-hook 'post-command-hook 'eloud-post-command-hook)
-(remove-hook 'post-command-hook 'eloud-post-command-hook)
+(defun eloud-pre-command-hook ()
+  (eloud-conditional-hook eloud-pre-command-hook-map))
 
 
 ;;; Speech functions
@@ -473,11 +477,13 @@
   (if eloud-mode
       (progn
 	(add-hook 'post-command-hook 'eloud-post-command-hook)
+	(add-hook 'pre-command-hook 'eloud-pre-command-hook)
 	(add-hook 'pre-command-hook 'eloud-save-point)
 	(eloud-map-hooks eloud-hook-map)
         (eloud-speak "eloud on"))
     (progn
       (remove-hook 'post-command-hook 'eloud-post-command-hook)
+      (remove-hook 'pre-command-hook 'eloud-pre-command-hook)	      
       (remove-hook 'pre-command-hook 'eloud-save-point)      
       (eloud-map-hooks eloud-hook-map t)
       (eloud-speak "eloud off"))))
