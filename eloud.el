@@ -155,13 +155,29 @@
 (defun eloud-rest-of-line ()
   (eloud-speak
    (buffer-substring (point) (line-end-position))))
-    
 
+
+(defun eloud-speak-after-move ()
+  "Reads from point saved in variable eloud-save-point to the new point."
+  (eloud-speak (buffer-substring eloud-pre-command-point (point))))
+
+
+(defun eloud-speak-point (&optional offset)
+  "Read character at point aloud or character at point modified by optional OFFSET."
+      (eloud-speak
+       (if offset
+	   (eloud-get-char-at-point offset)
+	 (eloud-get-char-at-point))
+	 eloud-speech-rate t "--punct"))
 
 (defvar eloud-hook-map '((minibuffer-setup-hook . eloud-speak-buffer)))
 
 (setq eloud-post-command-hook-map '((next-line . (eloud-rest-of-line))
-				    (previous-line . (eloud-rest-of-line))))
+				    (previous-line . (eloud-rest-of-line))
+				    (forward-word . (eloud-speak-after-move))
+				    (backward-word . (eloud-speak-after-move))
+				    (forward-char . (eloud-speak-point))
+				    (backward-char . (eloud-speak-point))))
 
 
 (defun eloud-conditional-hook (hook-map &optional unmap)
@@ -178,14 +194,6 @@
 
 (add-hook 'post-command-hook 'eloud-post-command-hook)
 (remove-hook 'post-command-hook 'eloud-post-command-hook)
-
-
-
-
-
-  ;; (mapcar (lambda (x)
-  ;; 	    (add-hook (car x) (cdr x)))
-  ;; 	  hook-map))
 
 
 ;;; Speech functions
