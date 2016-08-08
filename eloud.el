@@ -168,9 +168,17 @@
        (if offset
 	   (eloud-get-char-at-point offset)
 	 (eloud-get-char-at-point))
-	 eloud-speech-rate t "--punct"))
+       eloud-speech-rate t "--punct"))
 
-(defvar eloud-hook-map '((minibuffer-setup-hook . eloud-speak-buffer)))
+
+(defun eloud-speak-buffer-name ()
+  "Speak current buffer name."
+  (eloud-speak (buffer-name)))
+
+
+(defvar eloud-hook-map '((minibuffer-setup-hook . eloud-speak-buffer)
+			 (buffer-list-update-hook . eloud-speak-buffer-name)))
+
 
 (setq eloud-post-command-hook-map '((next-line . (eloud-rest-of-line))
 				    (previous-line . (eloud-rest-of-line))
@@ -179,10 +187,15 @@
 				    (forward-char . (eloud-speak-point))
 				    (backward-char . (eloud-speak-point))
 				    (move-beginning-of-line . (eloud-rest-of-line))
+				    (org-beginning-of-line . (eloud-rest-of-line))
+				    (dired-next-line . (eloud-rest-of-line))
 				    (self-insert-command . (eloud-speak-point -1))
 				    (kill-word . (eloud-last-kill-ring))
-				    (backward-kill-word . (eloud-last-kill-ring))))
+				    (backward-kill-word . (eloud-last-kill-ring))
+				    (beginning-of-buffer . (eloud-speak-buffer))))
 
+(add-hook 'buffer-list-update-hook (lambda () (eloud-speak "foo")))
+(remove-hook 'buffer-list-update-hook (lambda () (eloud-speak "foo")))
 
 
 (setq eloud-pre-command-hook-map '((backward-delete-char-untabify . (eloud-speak-point -1))
