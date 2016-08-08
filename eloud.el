@@ -176,8 +176,8 @@
   (eloud-speak (buffer-name)))
 
 
-(defvar eloud-hook-map '((minibuffer-setup-hook . eloud-speak-buffer)
-			 (buffer-list-update-hook . eloud-speak-buffer-name)))
+(defvar eloud-hook-map '((minibuffer-setup-hook . eloud-speak-buffer)))
+;;			 (buffer-list-update-hook . eloud-speak-buffer-name)))
 
 
 (setq eloud-post-command-hook-map '((next-line . (eloud-rest-of-line))
@@ -192,7 +192,8 @@
 				    (self-insert-command . (eloud-speak-point -1))
 				    (kill-word . (eloud-last-kill-ring))
 				    (backward-kill-word . (eloud-last-kill-ring))
-				    (beginning-of-buffer . (eloud-speak-buffer))))
+				    (beginning-of-buffer . (eloud-speak-buffer))
+				    (minibuffer-complete . (eloud-completion))))
 
 (add-hook 'buffer-list-update-hook (lambda () (eloud-speak "foo")))
 (remove-hook 'buffer-list-update-hook (lambda () (eloud-speak "foo")))
@@ -419,16 +420,13 @@
     (eloud-speak (prin1-to-string output))))
 
 
-(defun eloud-completion (&rest r)
-  "Advice to read completion in minibuffer.  Call original completion function with args R."
-  (let* ((old-func (car r))
-         (other-args (cdr r))
-         (initial-point (point)))
-    (if (apply old-func other-args)
-        (if (equal initial-point (point))
-            (eloud-speak
-             (substring-no-properties (eloud-get-buffer-string "*Completions*") 96))
-          (eloud-speak (current-word))))))
+(defun eloud-completion ()
+  (if (equal eloud-pre-command-point (point))
+      (progn
+	(sit-for 1)
+	(eloud-speak
+	 (substring-no-properties (eloud-get-buffer-string "*Completions*") 96)))
+    (eloud-speak (current-word))))
 
 
 ;;; Map speech functions to Emacs commands
