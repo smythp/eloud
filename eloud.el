@@ -176,10 +176,23 @@
   (eloud-speak (buffer-name)))
 
 
+
+(defun eloud-status-info ()
+  "Read status info normally on mode line."
+  (interactive)
+  (eloud-speak
+   (concat (buffer-name) " " (symbol-name major-mode))))
+
+
+(defun eloud-dabbrev-expand ()
+  "Speak last dabbrev completion."
+  (if dabbrev--last-expansion
+      (eloud-speak dabbrev--last-expansion)))
+
+
 (defvar eloud-hook-map '((minibuffer-setup-hook . eloud-speak-buffer)))
-;;			 (buffer-list-update-hook . eloud-speak-buffer-name))
 
-
+(setq dabbrev--last-expansion " ")
 (setq eloud-post-command-hook-map '((next-line . (eloud-rest-of-line))
 				    (previous-line . (eloud-rest-of-line))
 				    (forward-word . (eloud-speak-after-move))
@@ -187,6 +200,7 @@
 				    (forward-char . (eloud-speak-point))
 				    (backward-char . (eloud-speak-point))
 				    (eval-last-sexp . (eloud-last-message 0))
+				    (dabbrev-expand . (eloud-dabbrev-expand))
 				    (geiser-eval-last-sexp . (eloud-last-message -1))
 				    (move-beginning-of-line . (eloud-rest-of-line))
 				    (org-beginning-of-line . (eloud-rest-of-line))
@@ -212,8 +226,6 @@
 	  (called-function (funcall called-function)))))
 
 
-
-
 (defun eloud-post-command-hook ()
   (eloud-conditional-hook eloud-post-command-hook-map))
 
@@ -222,37 +234,6 @@
 
 
 ;;; Speech functions
-
-
-
-(defun eloud-dabbrev (&rest r)
-  "Advice for reading expanded dabbrev.  Call original function with args R."
-  (interactive "*P")
-  (let ((old-func (car r))
-        (additional-args (cdr r))
-        (initial-point (point)))
-    (apply old-func additional-args)
-    (eloud-speak dabbrev--last-expansion)))
-
-
-(defun eloud-whole-buffer (&rest r)
-  "Advice to speak whole buffer.  Call original function with args R."
-  (interactive "^P")
-  (let ((old-func (car r))
-        (n (cadr r)))
-    (progn
-      (funcall  old-func n)
-      (eloud-speak
-       (if (> (point-max) 120000)
-           (buffer-substring (point-min) 120000)
-         (buffer-substring (point-min) (point-max)))))))
-
-
-(defun eloud-status-info ()
-  "Read status info normally on mode line."
-  (interactive)
-  (eloud-speak
-   (concat (buffer-name) " " (symbol-name major-mode))))
 
 
 (defun eloud-ispell-command-loop (&rest r)
