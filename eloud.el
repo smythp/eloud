@@ -203,7 +203,22 @@
   (eloud-speak (car kill-ring)))
 
 
-(defvar eloud-hook-map '((minibuffer-setup-hook . eloud-speak-buffer)))
+
+(defun eloud-last-input ()
+  "Read last input character aloud."
+  (let ((last (eloud-get-char-at-point -1))
+	(second-last (eloud-get-char-at-point -2)))
+    (if (and (equal last " ") (not (equal second-last " ")))
+	(progn
+	  (save-excursion
+	    (goto-char (1- (point)))
+	    (eloud-speak (current-word))))
+      (eloud-speak last
+		   eloud-speech-rate t "--punct"))))
+
+
+(defvar eloud-hook-map '((minibuffer-setup-hook . eloud-speak-buffer)
+			 (post-self-insert-hook . eloud-last-input)))
 
 (setq dabbrev--last-expansion " ")
 (setq eloud-post-command-hook-map '((next-line . (eloud-rest-of-line))
@@ -218,7 +233,6 @@
 				    (move-beginning-of-line . (eloud-rest-of-line))
 				    (org-beginning-of-line . (eloud-rest-of-line))
 				    (dired-next-line . (eloud-rest-of-line))
-				    (self-insert-command . (eloud-speak-point -1))
 				    (kill-word . (eloud-last-kill-ring))
 				    (backward-kill-word . (eloud-last-kill-ring))
 				    (beginning-of-buffer . (eloud-speak-buffer))
