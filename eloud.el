@@ -177,7 +177,7 @@
 
 
 (defvar eloud-hook-map '((minibuffer-setup-hook . eloud-speak-buffer)))
-;;			 (buffer-list-update-hook . eloud-speak-buffer-name)))
+;;			 (buffer-list-update-hook . eloud-speak-buffer-name))
 
 
 (setq eloud-post-command-hook-map '((next-line . (eloud-rest-of-line))
@@ -186,6 +186,8 @@
 				    (backward-word . (eloud-speak-after-move))
 				    (forward-char . (eloud-speak-point))
 				    (backward-char . (eloud-speak-point))
+				    (eval-last-sexp . (eloud-last-message))
+				    (geiser-eval-last-sexp . (eloud-last-message))
 				    (move-beginning-of-line . (eloud-rest-of-line))
 				    (org-beginning-of-line . (eloud-rest-of-line))
 				    (dired-next-line . (eloud-rest-of-line))
@@ -195,12 +197,10 @@
 				    (beginning-of-buffer . (eloud-speak-buffer))
 				    (minibuffer-complete . (eloud-completion))))
 
-(add-hook 'buffer-list-update-hook (lambda () (eloud-speak "foo")))
-(remove-hook 'buffer-list-update-hook (lambda () (eloud-speak "foo")))
-
 
 (setq eloud-pre-command-hook-map '((backward-delete-char-untabify . (eloud-speak-point -1))
 				   (delete-forward-char . (eloud-speak-point))
+				   (ispell-word . (eloud-speak (eloud-get-buffer-string "*Choices*")))
 				   (delete-char . (eloud-speak-point))))
 
 
@@ -253,30 +253,6 @@
   (interactive)
   (eloud-speak
    (concat (buffer-name) " " (symbol-name major-mode))))
-
-
-(defun eloud-current-buffer (&rest r)
-  "Advice to read current buffer name aloud.  Call original function with args R."
-  (interactive "^p")
-  (let ((old-func (car r))
-        (other-args (cdr r)))
-    (if r
-	(apply old-func other-args))
-    (progn
-      (eloud-speak (concat (buffer-name) (buffer-substring (point) (point-max))))
-      (buffer-name))))
-
-
-(defun eloud-switch-to-buffer (&rest r)
-  "Advice to read current buffer aloud after switch.  Call original function with args R."
-  (let ((old-func (car r))
-        (other-args (cdr r)))
-    (if (called-interactively-p 'any)
-        (progn
-          (apply old-func other-args)
-          (eloud-speak (buffer-name))
-          (buffer-name))
-      (apply old-func other-args))))
 
 
 (defun eloud-ispell-command-loop (&rest r)
@@ -429,6 +405,18 @@
     (eloud-speak (current-word))))
 
 
+(defun eloud-last-message ()
+  "Reads last message aloud, or optional NUM message back."
+    (save-excursion
+      (set-buffer "*Messages*")
+      (save-excursion
+	(progn
+	  (goto-char (point-max))
+	  (forward-line -1)
+	  (forward-line 1)
+	  (eloud-speak (buffer-substring-no-properties (point) (line-end-position)))))))
+
+
 ;;; Map speech functions to Emacs commands
 
 
@@ -446,18 +434,6 @@
 		  (add-hook hook function-to-bind)
 		(remove-hook hook function-to-bind))))
 	    hook-map))
-
-
-(defun eloud-read-minibuffer-prompt (&rest r)
-  "Advice to read the current prompt in the minibuffer.  Call original function with args R."
-  (let* ((old-func (car r))
-	 (prompt (cadr r))
-	 (args (cdr r)))
-    (progn
-      (eloud-speak prompt)
-      (let ((output (apply old-func args)))
-					;       (eloud-speak output)
-        output))))
 
 
 ;;; Define mode
@@ -486,3 +462,4 @@
 ;; Copyright (C) 2016  Patrick Smyth
 
 ;; Author: Patrick Smyth <patricksmyth01>
+
