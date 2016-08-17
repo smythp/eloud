@@ -61,8 +61,6 @@
 ;;     (setq eloud-espeak-path "/usr/bin/espeak")
 
 
-
-
 ;;; Code:
 
 
@@ -184,10 +182,25 @@
    (concat (buffer-name) " " (symbol-name major-mode))))
 
 
+(defun eloud-last-message (&optional offset)
+  "Reads message aloud after moving NUM lines from end of message buffer."
+    (save-excursion
+      (set-buffer "*Messages*")
+      (save-excursion
+	(progn
+	  (goto-char (point-max))
+	  (forward-line offset)
+	  (eloud-speak (buffer-substring-no-properties (point) (line-end-position)))))))
+
+
 (defun eloud-dabbrev-expand ()
   "Speak last dabbrev completion."
   (if dabbrev--last-expansion
       (eloud-speak dabbrev--last-expansion)))
+
+
+(defun eloud-last-kill-ring ()
+  (eloud-speak (car kill-ring)))
 
 
 (defvar eloud-hook-map '((minibuffer-setup-hook . eloud-speak-buffer)))
@@ -263,69 +276,6 @@
             output))))))
 
 
-(defun eloud-character-at-point (&rest r)
-  "Advice to read aloud the character at point.  Call original function with args R."
-  (interactive "^p")
-  (let ((old-func (car r))
-        (n (cadr r)))
-    (progn
-      (funcall old-func n)
-      (eloud-speak
-       (buffer-substring (point) (1+ (point)))
-       nil t "--punct"))))
-
-
-(defun eloud-character-before-point (&rest r)
-  "Advice to read aloud the character before point.  Call original function with args R."
-  (interactive "^p")
-  (let ((old-func (car r))
-        (n (cadr r))
-        (other-args (cdr r)))
-    (if (= (point) 1)
-        (progn
-          (eloud-speak "Beginning of buffer")
-          (apply old-func other-args))
-      (progn
-        (eloud-speak
-         (eloud-get-char-at-point -1)
-         nil t "--punct")
-        (apply old-func other-args)))))
-
-
-(defun eloud-character-after-point (&rest r)
-  "Advice to read aloud the character after point.  Call original function with args R."
-  (interactive "^p")
-  (let ((old-func (car r))
-        (n (cadr r))
-        (other-args (cdr r)))
-    (if (called-interactively-p 'any)
-        (if (= (point) (point-max))
-            (progn
-              (eloud-speak "end of buffer")
-              (apply old-func other-args))
-          (progn
-            (eloud-speak
-             (eloud-get-char-at-point)
-             nil t "--punct")
-            (apply old-func other-args))))
-    (apply old-func other-args)))
-
-
-(defun eloud-delete-forward (&rest r)
-  "Advice to read aloud the character after point.  Call original function with args R."
-  (interactive "^p")
-  (let ((old-func (car r))
-        (n (cadr r)))
-    (if (= (point) (point-max))
-        (eloud-speak "end of buffer")
-      (progn
-        (eloud-speak
-         (eloud-get-char-at-point)
-         nil t "--punct")
-        (funcall old-func n)))))
-
-
-
 (defun eloud-isearch-insert (&rest r)
   "Advice to read characters inserted into the minibuffer during isearch.  Call original function with args R."
   (let ((old-func (car r))
@@ -349,61 +299,7 @@
             (t (eloud-speak "no match"))))))
 
 
-(defun eloud-last-kill-ring ()
-  (eloud-speak (car kill-ring)))
-
-
-(defun eloud-moved-point (&rest r)
-  "Advice to read difference between point before calling original function and point after calling original function.  Original function called with args R."
-  (interactive "^p")
-  (let ((move-number (cadr r))
-        (old-func (car r))
-        (additional-args (cddr r))
-        (start-point (point)))
-    (progn
-      (funcall old-func move-number)
-      (save-excursion
-        (progn
-          (eloud-speak (buffer-substring start-point (point))))))))
-
-
-(defun eloud-evaluation (&rest r)
-  "Advice to read the output of an interactive command aloud.  Call original command with args R."
-  (interactive "P")
-  (let* ((old-func (car r))
-	 (n (cadr r))
-	 (other-args (cdr r))
-	 (output (apply old-func other-args)))
-    (eloud-speak (prin1-to-string output))))
-
-
-(defun eloud-completion ()
-  (if (equal eloud-pre-command-point (point))
-      (progn
-	(sit-for 1)
-	(eloud-speak
-	 (substring-no-properties (eloud-get-buffer-string "*Completions*") 96)))
-    (eloud-speak (current-word))))
-
-
-(defun eloud-last-message (&optional offset)
-  "Reads message aloud after moving NUM lines from end of message buffer."
-    (save-excursion
-      (set-buffer "*Messages*")
-      (save-excursion
-	(progn
-	  (goto-char (point-max))
-	  (forward-line offset)
-	  (eloud-speak (buffer-substring-no-properties (point) (line-end-position)))))))
-
-
-;;; Map speech functions to Emacs commands
-
-
-
-
 ;;; add functions to hooks
-
 
 
 (defun eloud-map-hooks (hook-map &optional unmap)
