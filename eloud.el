@@ -186,8 +186,8 @@
 				    (backward-word . (eloud-speak-after-move))
 				    (forward-char . (eloud-speak-point))
 				    (backward-char . (eloud-speak-point))
-				    (eval-last-sexp . (eloud-last-message))
-				    (geiser-eval-last-sexp . (eloud-last-message))
+				    (eval-last-sexp . (eloud-last-message 0))
+				    (geiser-eval-last-sexp . (eloud-last-message -1))
 				    (move-beginning-of-line . (eloud-rest-of-line))
 				    (org-beginning-of-line . (eloud-rest-of-line))
 				    (dired-next-line . (eloud-rest-of-line))
@@ -405,15 +405,14 @@
     (eloud-speak (current-word))))
 
 
-(defun eloud-last-message ()
-  "Reads last message aloud, or optional NUM message back."
+(defun eloud-last-message (&optional offset)
+  "Reads message aloud after moving NUM lines from end of message buffer."
     (save-excursion
       (set-buffer "*Messages*")
       (save-excursion
 	(progn
 	  (goto-char (point-max))
-	  (forward-line -1)
-	  (forward-line 1)
+	  (forward-line offset)
 	  (eloud-speak (buffer-substring-no-properties (point) (line-end-position)))))))
 
 
