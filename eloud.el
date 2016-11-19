@@ -96,6 +96,15 @@
   (equal (byte-to-string (aref string 0)) "-"))
 
 
+(defun eloud-escape-characters (string replacement)
+  "Remove or replace characters that cause problems when passed to espeak."
+  (let ((out (replace-regexp-in-string "`" ""
+				       (replace-regexp-in-string "\\\"" "" string))))
+    (if (eloud-hyphen-start-p string)
+	(concat " " out)
+      out)))
+
+
 (defun eloud-get-buffer-string (buffer)
   "Return a string with the contents of BUFFER."
   (save-excursion
@@ -117,23 +126,33 @@
 
 ;;; Main speech function
 
+;; (defun eloud-speak (string &optional speed no-kill &rest args)
+;;   "Pass STRING to the espeak asynchronous process.  Use the `eloud-speech-rate' variable if no optional integer SPEED is specified.  If NO-KILL argument non-nil, running speech processes are killed before starting new speech process.  Pass additional arguments to espeak as rest ARGS."
+;;   ;; Defines a function that runs process on list of arguments.
+;;   ;; Defines sensible defaults.
+;;   ;; Run with defaults if no additional args specified in function call, else append additional arguments and run
+;;   (let* ((string (if (equal string "") " " string))
+;; 	 (default-args `("eloud-speaking" nil ,eloud-espeak-path ,(if (eloud-hyphen-start-p string) (concat " " string) string) "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate)))))
+;;     (if (not (current-idle-time))
+;; 	(progn
+;; 	  (if (not (equal string ""))
+;; 	      (apply #'start-process (if (not args)
+;; 					 default-args
+;; 				       (append default-args args))))))))
+
+
 (defun eloud-speak (string &optional speed no-kill &rest args)
-  "Pass STRING to the espeak asynchronous process.  Use the `eloud-speech-rate' variable if no optional integer SPEED is specified.  If NO-KILL argument non-nil, running speech processes are killed before starting new speech process.  Pass additional arguments to espeak as rest ARGS."
-  ;; Defines a function that runs process on list of arguments.
-  ;; Defines sensible defaults.
-  ;; Run with defaults if no additional args specified in function call, else append additional arguments and run
-  (let* ((string (if (equal string "") " " string))
-	 (default-args `("eloud-speaking" nil ,eloud-espeak-path ,(if (eloud-hyphen-start-p string) (concat " " string) string) "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate)))))
-    (if (not (current-idle-time))
-	(progn
-	  (if (not no-kill)
-	      (progn
-		(start-process "kill-espeak" nil "killall" "espeak")
-		(sleep-for .5)))
-	  (if (not (equal string ""))
-	      (apply #'start-process (if (not args)
-					 default-args
-				       (append default-args args))))))))
+  (let* ((string (if (equal string "") " "
+		  (eloud-escape-characters string "")))
+	(command (concat
+		  "bash -c \""
+		  (if (not no-kill) "killall espeak;")
+		  "espeak "
+		  (if speed
+		      (concat "-s " (number-to-string speed) " ")
+		    (concat "-s " (number-to-string eloud-speech-rate) " "))
+		  "\\\"" string "\\\"\"")))
+    (start-process-shell-command "eloud-speak" nil command)))
 
 
 (defun eloud-save-point ()
