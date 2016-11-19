@@ -142,17 +142,23 @@
 
 
 (defun eloud-speak (string &optional speed no-kill &rest args)
+  "Pass STRING to the espeak asynchronous process.  Use the `eloud-speech-rate' variable if no optional integer SPEED is specified.  If NO-KILL argument non-nil, running speech processes are killed before starting new speech process.  Pass additional arguments to espeak as rest ARGS."
+;;   ;; Defines a function that runs process on list of arguments.
+;;   ;; Defines sensible defaults.
+;;   ;; Run with defaults if no additional args specified in function call, else append additional arguments and run  
   (let* ((string (if (equal string "") " "
 		  (eloud-escape-characters string "")))
 	(command (concat
 		  "bash -c \""
 		  (if (not no-kill) "killall espeak;")
-		  "espeak "
+		  eloud-espeak-path " "
 		  (if speed
 		      (concat "-s " (number-to-string speed) " ")
 		    (concat "-s " (number-to-string eloud-speech-rate) " "))
+		  (if args (apply #'concat (mapcar (lambda (string) (concat string " ")) args)))
 		  "\\\"" string "\\\"\"")))
-    (start-process-shell-command "eloud-speak" nil command)))
+    (if (not (current-idle-time))
+	(start-process-shell-command "eloud-speak" nil command))))
 
 
 (defun eloud-save-point ()
