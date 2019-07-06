@@ -75,6 +75,13 @@
   :type '(integer)
   :group 'eloud)
 
+
+(defcustom eloud-voice "en"
+  "Name of voice file to use. For example, English is \"en\", while German is \"de\"."
+  :type '(string)
+  :group 'eloud)
+
+
 (defcustom eloud-espeak-path "/usr/bin/espeak"
   "Path to espeak as string. On OSX, likely to be /usr/local/bin/espeak instead."
   :type '(string)
@@ -120,7 +127,7 @@
   ;; Defines sensible defaults.
   ;; Run with defaults if no additional args specified in function call, else append additional arguments and run
   (let* ((string (if (equal string "") " " string))
-	 (default-args `("eloud-speaking" nil ,eloud-espeak-path ,(if (eloud-hyphen-start-p string) (concat " " string) string) "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate)))))
+	 (default-args `("eloud-speaking" nil ,eloud-espeak-path ,(if (eloud-hyphen-start-p string) (concat " " string) string) "-v" ,eloud-voice "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate)))))
     (if (not (current-idle-time))
 	(progn
 	  (if (not no-kill)
