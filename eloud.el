@@ -66,6 +66,9 @@
 ;;; Code:
 
 
+(require 'eloud-command-map)
+
+
 (defgroup eloud nil
   "Customization group for the Eloud screen reader package."
   :group 'multimedia)
@@ -121,14 +124,22 @@
 
 ;;; Main speech function
 
-(defun eloud-speak (string &optional speed no-kill &rest args)
-  "Pass STRING to the espeak asynchronous process.  Use the `eloud-speech-rate' variable if no optional integer SPEED is specified.  If NO-KILL argument non-nil, running speech processes are killed before starting new speech process.  Pass additional arguments to espeak as rest ARGS."
+(defun eloud-speak (string &optional speed no-kill allow-idle &rest args)
+  "Pass STRING to a new espeak asynchronous process.  Use the
+`eloud-speech-rate' variable if no optional integer SPEED is
+specified.  If the NO-KILL argument is non-nil, running speech
+processes are killed before starting a new speech process.  If
+ALLOW-IDLE is non-nil, bypass idle time check so that a new
+speech process is attempted regardless of current emacs idle
+time.  Pass additional command line arguments to the new espeak
+process as rest ARGS."
   ;; Defines a function that runs process on list of arguments.
   ;; Defines sensible defaults.
   ;; Run with defaults if no additional args specified in function call, else append additional arguments and run
   (let* ((string (if (equal string "") " " string))
-	 (default-args `("eloud-speaking" nil ,eloud-espeak-path ,(if (eloud-hyphen-start-p string) (concat " " string) string) "-v" ,eloud-voice "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate)))))
-    (if (not (current-idle-time))
+	 (default-args `("eloud-speaking" nil ,eloud-espeak-path ,(if (eloud-hyphen-start-p string) (concat " " string) string) "-v" ,eloud-voice "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate))))
+         (c-i-t (current-idle-time)))
+    (if (or allow-idle (not c-i-t))
 	(progn
 	  (if (not no-kill)
 	      (progn
@@ -278,7 +289,7 @@
       (funcall old-func n)
       (eloud-speak
        (buffer-substring (point) (1+ (point)))
-       nil t "--punct"))))
+       nil t nil "--punct"))))
 
 
 (defun eloud-character-before-point (&rest r)
@@ -294,7 +305,7 @@
       (progn
         (eloud-speak
          (eloud-get-char-at-point -1)
-         nil t "--punct")
+         nil t nil "--punct")
         (apply old-func other-args)))))
 
 
@@ -312,7 +323,7 @@
           (progn
             (eloud-speak
              (eloud-get-char-at-point)
-             nil t "--punct")
+             nil t nil "--punct")
             (apply old-func other-args))))
     (apply old-func other-args)))
 
@@ -327,7 +338,7 @@
       (progn
         (eloud-speak
          (eloud-get-char-at-point)
-         nil t "--punct")
+         nil t nil "--punct")
         (funcall old-func n)))))
 
 
@@ -350,7 +361,7 @@
          (if (> n 1)
              (concat (number-to-string n) " times " last-char-cmd)
            last-char-cmd)
-         eloud-speech-rate t "--punct")
+         eloud-speech-rate t nil "--punct")
 	out-char))))
 
 
@@ -459,7 +470,7 @@
 			   (minibuffer-complete . eloud-completion)
 			   (backward-delete-char-untabify . eloud-character-before-point))
   "Holds a list of cons cells used to map advice onto functions.")
-
+ 
 
 ;;; add functions to hooks
 
@@ -471,25 +482,25 @@
 (defun eloud-map-commands-to-speech-functions (advice-map advice-type &optional unmap)
   "Map native Emacs functions to Eloud advice defined as list of cons cells in ADVICE-MAP.  ADVICE-TYPE determines whether advice is :around, :override, :after, etc., in the form of a keyword symbol.  If optional UNMAP parameter is non-nil, remove all bound advice functions instead."
   (mapcar (lambda (x)
-            (let ((target-function (car x))
-                  (speech-function (cdr x)))
-              (if (not unmap)
-                  (advice-add target-function advice-type speech-function)
-                (advice-remove target-function speech-function))))
+              (let ((target-function (car x))
+                    (speech-function (cdr x)))
+                (if (not unmap)
+                    (define-eloud-command-map-advice globals target-function speech-function advice-type)
+                  (undefine-eloud-command-map-advice globals target-function speech-function))))
           advice-map))
 
 
 (defun eloud-map-commands-to-hooks (hook-map &optional unmap)
   "Map speech functions to hooks as defined in list of cons cells HOOK-MAP.  If UNMAP is non-nil, remove the added functions."
   (mapcar (lambda (x)
-            (progn
-              (if (not (boundp (car x)))
-                  (set (car x)  nil))
+              ;; FIXME: I have no idea what the semantics of the hook
+              ;; variable being unbound means here, nor why we'd set the hook variable to nil.
+              ;;(if (not (boundp (car x))) (set (car x) nil))
               (let ((hook-variable (car x))
                     (function-to-add (cdr x)))
                 (if (not unmap)
-                    (push function-to-add (symbol-value hook-variable))
-                  (set hook-variable (remove function-to-add (symbol-value hook-variable)))))))
+                    (define-eloud-command-map-hook globals hook-variable function-to-add)
+                  (undefine-eloud-command-map-hook globals hook-variable function-to-add))))
           hook-map))
 
 
@@ -508,18 +519,25 @@
 ;;; Define mode
 
 (define-minor-mode eloud-mode "Minor mode for reading text aloud." nil " eloud" :global t
-  (if eloud-mode
-      (progn
-        (eloud-map-commands-to-speech-functions eloud-around-map :around)
-        (eloud-map-commands-to-hooks eloud-hook-map)
-        (eloud-speak "eloud on"))
-    (progn
-      (eloud-map-commands-to-speech-functions eloud-around-map nil t)
-      (eloud-map-commands-to-hooks eloud-hook-map t)
-      (eloud-speak "eloud off"))))
+  (cond
+   (eloud-mode
+    (eloud-command-map-activate globals)
+    (message "eloud now ON")
+    (eloud-speak "eloud on"))
+   (t
+    (eloud-command-map-deactivate globals)
+    (message "eloud now OFF")
+    (eloud-speak "eloud off"))))
 
 
 (provide 'eloud)
+
+;; SIC:  Needs to have eloud fully defined, hence this needs to come after PROVIDE.
+(define-eloud-command-map globals)
+(eloud-map-commands-to-speech-functions eloud-around-map :around)
+(eloud-map-commands-to-hooks eloud-hook-map)
+(eloud-command-map-deactivate globals)
+(message "eloud is now loaded.")
 
 
 ;;; eloud.el ends here
