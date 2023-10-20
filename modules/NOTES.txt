@@ -1,0 +1,74 @@
+
+Base, no init:
+
+C-f forward-char global-map
+C-b backward-char global-map
+C-n next-line global-map
+C-p previous-line global-map
+[up] previous-line global-map
+[donw] next-line global-map
+[left] left-char global-map
+[right] right-char global-map
+
+
+ELOUD, no arrows module:
+
+forward-char eloud-character-at-point
+backward-char eloud-character-at-point
+next-line eloud-rest-of-line
+previous-line eloud-rest-of-line
+left-char [un-advised]
+right-char [un-advised]
+[keybindings are the same as --no-init)
+C-f forward-char global-map
+C-b backward-char global-map
+C-n next-line global-map
+C-p previous-line global-map
+[up] previous-line global-map
+[donw] next-line global-map
+[left] left-char global-map
+[right] right-char global-map
+
+
+===
+
+forward-char eloud-character-at-point (same)
+backward-char eloud-character-at-point (same)
+next-line eloud-character-at-point (was: eloud-rest-of-line)
+previous-line eloud-character-at-point (was: eloud-rest-of-line)
+left-char eloud-character-at-point (was: un-advised)
+right-char eloud-character-at-point (was: un-advised)
+[keybindings are the same as --no-init)
+
+===
+
+
+Phase 1 leaves out error handling for beginning/end of buffer out of range errors.  Without that, there are two parts:
+
+A) Remove eloud advice from next-line and previous-line and install eloud-arrow-keys advice.  This makes rest of line be char at point for up/down.
+
+B) Save global-map bindings of [left] and [right], re-binding those keys to
+forward-char/backward-char rather than right-char/left-char, so that they get the
+char at point advice that has already been installed on forward-char/backward-char.
+
+Phase 2 then adds advice that catches range errors to the eloud advice functions which, in turn, advise the usual movement functions.
+
+===
+
+For modules, there are three phases:
+A) loading/initialization
+B) eloud "ON" mode
+C) B) eloud "OFF" mode
+
+At load time the module should set up it's command mappings,
+but should complete with the module's command map deactivated.  Any other
+side effects should probably be effected at eloud "ON" time and
+reversed at eloud "OFF" time.  That said, there is no requirement that
+an eloud module have a single command map.  An eloud module is free
+to define no command map, a single command map (the usual case),
+or multiple command maps, depending on the module's functionality.
+
+
+
+===
+End
