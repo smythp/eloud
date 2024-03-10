@@ -19,7 +19,7 @@
            (the-ch (string-to-char the-str))
            (ch-props (get-char-code-property the-ch 'general-category)))
       (when (equal ch-props 'Lu)
-        (setq the-str (concatenate 'string eloud-casewise-capitalized-indicator " " the-str)))
+        (setq the-str (concat eloud-casewise-capitalized-indicator " " the-str)))
       (eloud-speak the-str nil t "--punct"))))
 
 (defun eloud-casewise-activate ()
