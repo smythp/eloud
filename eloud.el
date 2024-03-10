@@ -1,4 +1,4 @@
-;;; eloud.el --- A lightweight, interactive screen reader
+4;;; eloud.el --- A lightweight, interactive screen reader
 
 ;; Copyright (C) 2016  Patrick Smyth
 
@@ -98,6 +98,14 @@
 
 ;;; Helper functions
 
+(defun eloud-escape-characters (string replacement)
+  "Remove or replace characters that cause problems when passed to espeak."
+  (let ((out (replace-regexp-in-string "`" ""
+				       (replace-regexp-in-string "\\\"" "" string))))
+    (if (eloud-hyphen-start-p string)
+	(concat " " out)
+      out)))
+
 (defun eloud-hyphen-start-p (string)
   "Test if first character of STRING is a hyphen."
   (equal (byte-to-string (aref string 0)) "-"))
@@ -124,31 +132,24 @@
 
 ;;; Main speech function
 
-(defun eloud-speak (string &optional speed no-kill allow-idle &rest args)
-  "Pass STRING to a new espeak asynchronous process.  Use the
-`eloud-speech-rate' variable if no optional integer SPEED is
-specified.  If the NO-KILL argument is non-nil, running speech
-processes are killed before starting a new speech process.  If
-ALLOW-IDLE is non-nil, bypass idle time check so that a new
-speech process is attempted regardless of current emacs idle
-time.  Pass additional command line arguments to the new espeak
-process as rest ARGS."
-  ;; Defines a function that runs process on list of arguments.
-  ;; Defines sensible defaults.
-  ;; Run with defaults if no additional args specified in function call, else append additional arguments and run
-  (let* ((string (if (equal string "") " " string))
-	 (default-args `("eloud-speaking" nil ,eloud-espeak-path ,(if (eloud-hyphen-start-p string) (concat " " string) string) "-v" ,eloud-voice "-s" ,(if speed (number-to-string speed) (number-to-string eloud-speech-rate))))
-         (c-i-t (current-idle-time)))
-    (if (or allow-idle (not c-i-t))
-	(progn
-	  (if (not no-kill)
-	      (progn
-		(start-process "kill-espeak" nil "killall" "espeak")
-		(sleep-for .5)))
-	  (if (not (equal string ""))
-	      (apply #'start-process (if (not args)
-					 default-args
-				       (append default-args args))))))))
+(defun eloud-speak (string &optional speed no-kill &rest args)
+  "Pass STRING to the espeak asynchronous process.  Use the `eloud-speech-rate' variable if no optional integer SPEED is specified.  If NO-KILL argument non-nil, running speech processes are killed before starting new speech process.  Pass additional arguments to espeak as rest ARGS."
+;;   ;; Defines a function that runs process on list of arguments.
+;;   ;; Defines sensible defaults.
+;;   ;; Run with defaults if no additional args specified in function call, else append additional arguments and run  
+  (let* ((string (if (equal string "") " "
+		  (eloud-escape-characters string "")))
+	(command (concat
+		  "bash -c \""
+		  (if (not no-kill) "killall espeak;")
+		  eloud-espeak-path " "
+		  (if speed
+		      (concat "-s " (number-to-string speed) " ")
+		    (concat "-s " (number-to-string eloud-speech-rate) " "))
+		  (if args (apply #'concat (mapcar (lambda (string) (concat string " ")) args)))
+		  "\\\"" string "\\\"\"")))
+    (if (not (current-idle-time))
+	(start-process-shell-command "eloud-speak" nil command))))
 
 
 ;;; Speech functions
@@ -178,7 +179,9 @@ process as rest ARGS."
 
 
 (defun eloud-rest-of-line-delay (&rest r)
-  "Advice for reading remainder of line.  Call original function with arguments R.  Incorporates delay as workaround for moving to beginning of line while reading."
+  "Advice for reading remainder of line.  Call original function
+ with arguments R.  Incorporates delay as workaround for moving
+ to beginning of line while reading."
   (interactive "^p")
   (let ((move-number (cadr r))
         (old-func (car r))
